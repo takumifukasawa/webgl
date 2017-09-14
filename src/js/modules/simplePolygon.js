@@ -39,22 +39,28 @@ export default function simplePolygon(canvas, gl) {
   gl.enableVertexAttribArray(attLocation);
   gl.vertexAttribPointer(attLocation, attStride, gl.FLOAT, false, 0, 0);
 
+  const m = new matIV();
+  const mMatrix = m.identity(m.create());
+  const vMatrix = m.identity(m.create());
+  const pMatrix = m.identity(m.create());
+  const mvpMatrix = m.identity(m.create());
+
+  const uniLocation = gl.getUniformLocation(program, "mvpMatrix");
+
+  const setSize = (width, height) => {
+    m.lookAt([0.0, 1.0, 3.0], [0, 0, 0], [0, 1, 0], vMatrix);
+    m.perspective(90, width / height, 0.1, 100, pMatrix);
+    m.multiply(pMatrix, vMatrix, mvpMatrix);
+    m.multiply(mvpMatrix, mMatrix, mvpMatrix);
+    
+    gl.viewport(0, 0, width, height);
+  }
+
   const tick = () => {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    const m = new matIV();
-    const mMatrix = m.identity(m.create());
-    const vMatrix = m.identity(m.create());
-    const pMatrix = m.identity(m.create());
-    const mvpMatrix = m.identity(m.create());
-
-    m.lookAt([0.0, 1.0, 3.0], [0, 0, 0], [0, 1, 0], vMatrix);
-    m.perspective(90, canvas.offsetWidth / canvas.offsetHeight, 0.1, 100, pMatrix);
-    m.multiply(pMatrix, vMatrix, mvpMatrix);
-    m.multiply(mvpMatrix, mMatrix, mvpMatrix);
-
-    const uniLocation = gl.getUniformLocation(program, "mvpMatrix");
+    // update uniform
     gl.uniformMatrix4fv(uniLocation, false, mvpMatrix);
 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -62,6 +68,7 @@ export default function simplePolygon(canvas, gl) {
   }
   
   return {
+    setSize,
     tick
   };
 }

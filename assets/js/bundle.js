@@ -147,22 +147,28 @@ function simplePolygon(canvas, gl) {
   gl.enableVertexAttribArray(attLocation);
   gl.vertexAttribPointer(attLocation, attStride, gl.FLOAT, false, 0, 0);
 
+  var m = new matIV();
+  var mMatrix = m.identity(m.create());
+  var vMatrix = m.identity(m.create());
+  var pMatrix = m.identity(m.create());
+  var mvpMatrix = m.identity(m.create());
+
+  var uniLocation = gl.getUniformLocation(program, "mvpMatrix");
+
+  var setSize = function setSize(width, height) {
+    m.lookAt([0.0, 1.0, 3.0], [0, 0, 0], [0, 1, 0], vMatrix);
+    m.perspective(90, width / height, 0.1, 100, pMatrix);
+    m.multiply(pMatrix, vMatrix, mvpMatrix);
+    m.multiply(mvpMatrix, mMatrix, mvpMatrix);
+
+    gl.viewport(0, 0, width, height);
+  };
+
   var tick = function tick() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var m = new matIV();
-    var mMatrix = m.identity(m.create());
-    var vMatrix = m.identity(m.create());
-    var pMatrix = m.identity(m.create());
-    var mvpMatrix = m.identity(m.create());
-
-    m.lookAt([0.0, 1.0, 3.0], [0, 0, 0], [0, 1, 0], vMatrix);
-    m.perspective(90, canvas.offsetWidth / canvas.offsetHeight, 0.1, 100, pMatrix);
-    m.multiply(pMatrix, vMatrix, mvpMatrix);
-    m.multiply(mvpMatrix, mMatrix, mvpMatrix);
-
-    var uniLocation = gl.getUniformLocation(program, "mvpMatrix");
+    // update uniform
     gl.uniformMatrix4fv(uniLocation, false, mvpMatrix);
 
     gl.drawArrays(gl.TRIANGLES, 0, 3);
@@ -170,6 +176,7 @@ function simplePolygon(canvas, gl) {
   };
 
   return {
+    setSize: setSize,
     tick: tick
   };
 }
@@ -177,38 +184,39 @@ function simplePolygon(canvas, gl) {
 },{"./../config/":2,"./../utils/createProgram":7,"./../utils/createShader":8,"./../utils/createVBO":9}],6:[function(require,module,exports){
 "use strict";
 
-var _createShader = require("./utils/createShader");
-
-var _createShader2 = _interopRequireDefault(_createShader);
-
-var _createProgram = require("./utils/createProgram");
-
-var _createProgram2 = _interopRequireDefault(_createProgram);
-
 var _modules = require("./modules/");
 
 var modules = _interopRequireWildcard(_modules);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 var wrapper = document.querySelector(".wrapper");
 var canvas = document.createElement("canvas");
 wrapper.appendChild(canvas);
 
 var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-
 var controller = modules.simplePolygon(canvas, gl);
 
-var tick = function tick() {
+function onWindowResize() {
+  var width = wrapper.offsetWidth;
+  var height = wrapper.offsetHeight;
+
+  canvas.width = width;
+  canvas.height = height;
+
+  controller.setSize(width, height);
+}
+
+function tick() {
   controller.tick();
   requestAnimationFrame(tick);
-};
+}
 
+onWindowResize();
+window.addEventListener("resize", onWindowResize);
 requestAnimationFrame(tick);
 
-},{"./modules/":4,"./utils/createProgram":7,"./utils/createShader":8}],7:[function(require,module,exports){
+},{"./modules/":4}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
