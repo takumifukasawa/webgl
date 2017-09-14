@@ -1,6 +1,6 @@
 
 import simplePolygon from "./simplePolygon";
 
-export {
-  simplePolygon
+export default {
+  simplePolygon: simplePolygon
 };
