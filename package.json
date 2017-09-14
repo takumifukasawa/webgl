@@ -30,6 +30,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babelify": "^7.3.0",
     "browser-sync": "^2.18.13",
+    "keymirror": "^0.1.1",
     "watchify": "^3.9.0"
   }
 }
