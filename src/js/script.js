@@ -31,8 +31,8 @@ function onWindowResize() {
   controller.setSize(width, height);
 }
 
-function tick() {
-  controller.tick();
+function tick(time) {
+  controller.tick(time);
   requestAnimationFrame(tick);
 }
 

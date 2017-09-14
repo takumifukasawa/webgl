@@ -84,12 +84,12 @@ export default (canvas, gl) => {
     gl.viewport(0, 0, width, height);
   }
 
-  const tick = () => {
+  const tick = (time) => {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     m.identity(mMatrix);
-    m.translate(mMatrix, [1.5, 0.0, 0.0], mMatrix);
+    m.translate(mMatrix, [1.5, Math.sin(time / 400) * .8, 0.0], mMatrix);
     m.multiply(tmpMatrix, mMatrix, mvpMatrix);
     gl.uniformMatrix4fv(uniLocation, false, mvpMatrix);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
