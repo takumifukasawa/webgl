@@ -90,6 +90,93 @@ exports.default = (0, _keymirror2.default)({
 },{"keymirror":1}],4:[function(require,module,exports){
 "use strict";
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.simplePolygon = undefined;
+
+var _simplePolygon = require("./simplePolygon");
+
+var _simplePolygon2 = _interopRequireDefault(_simplePolygon);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.simplePolygon = _simplePolygon2.default;
+
+},{"./simplePolygon":5}],5:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = simplePolygon;
+
+var _config = require("./../config/");
+
+var _createVBO = require("./../utils/createVBO");
+
+var _createVBO2 = _interopRequireDefault(_createVBO);
+
+var _createShader = require("./../utils/createShader");
+
+var _createShader2 = _interopRequireDefault(_createShader);
+
+var _createProgram = require("./../utils/createProgram");
+
+var _createProgram2 = _interopRequireDefault(_createProgram);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var vertexShaderText = "\nattribute vec3 position;\nuniform mat4 mvpMatrix;\n\nvoid main(void) {\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
+
+var fragmentShaderText = "\nvoid main(void) {\n  gl_FragColor = vec4(1., 0., 0., 1.);\n}\n";
+
+function simplePolygon(canvas, gl) {
+  var positions = [0.0, 1.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, 0.0];
+
+  var vertexShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.VERTEX_SHADER, vertexShaderText);
+  var fragmentShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.FRAGMENT_SHADER, fragmentShaderText);
+
+  var program = (0, _createProgram2.default)(gl, vertexShader, fragmentShader);
+
+  var attLocation = gl.getAttribLocation(program, "position");
+  var attStride = 3;
+
+  var vbo = (0, _createVBO2.default)(gl, positions);
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.enableVertexAttribArray(attLocation);
+  gl.vertexAttribPointer(attLocation, attStride, gl.FLOAT, false, 0, 0);
+
+  var tick = function tick() {
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    var m = new matIV();
+    var mMatrix = m.identity(m.create());
+    var vMatrix = m.identity(m.create());
+    var pMatrix = m.identity(m.create());
+    var mvpMatrix = m.identity(m.create());
+
+    m.lookAt([0.0, 1.0, 3.0], [0, 0, 0], [0, 1, 0], vMatrix);
+    m.perspective(90, canvas.offsetWidth / canvas.offsetHeight, 0.1, 100, pMatrix);
+    m.multiply(pMatrix, vMatrix, mvpMatrix);
+    m.multiply(mvpMatrix, mMatrix, mvpMatrix);
+
+    var uniLocation = gl.getUniformLocation(program, "mvpMatrix");
+    gl.uniformMatrix4fv(uniLocation, false, mvpMatrix);
+
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.flush();
+  };
+
+  return {
+    tick: tick
+  };
+}
+
+},{"./../config/":2,"./../utils/createProgram":7,"./../utils/createShader":8,"./../utils/createVBO":9}],6:[function(require,module,exports){
+"use strict";
+
 var _createShader = require("./utils/createShader");
 
 var _createShader2 = _interopRequireDefault(_createShader);
@@ -97,6 +184,12 @@ var _createShader2 = _interopRequireDefault(_createShader);
 var _createProgram = require("./utils/createProgram");
 
 var _createProgram2 = _interopRequireDefault(_createProgram);
+
+var _modules = require("./modules/");
+
+var modules = _interopRequireWildcard(_modules);
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -106,19 +199,16 @@ wrapper.appendChild(canvas);
 
 var gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
 
-var vertexPositions = [0.0, 1.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, 0.0];
+var controller = modules.simplePolygon(canvas, gl);
 
 var tick = function tick() {
-  // clear context
-  gl.clearColor(0.0, 0.0, 0.0, 1.0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
+  controller.tick();
   requestAnimationFrame(tick);
 };
 
 requestAnimationFrame(tick);
 
-},{"./utils/createProgram":5,"./utils/createShader":6}],5:[function(require,module,exports){
+},{"./modules/":4,"./utils/createProgram":7,"./utils/createShader":8}],7:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -128,12 +218,12 @@ exports.default = createProgram;
 function createProgram(gl, vs, fs) {
   var program = gl.createProgram();
 
-  gl.attatchShader(program, vs);
-  gl.attatchShader(program, fs);
+  gl.attachShader(program, vs);
+  gl.attachShader(program, fs);
 
   gl.linkProgram(program);
 
-  if (gl.getProgramParamater(program, gl.LINK_STATUS)) {
+  if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
     gl.useProgram(program);
     return program;
   } else {
@@ -141,7 +231,7 @@ function createProgram(gl, vs, fs) {
   }
 }
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -163,17 +253,40 @@ function createShader(gl, type, str) {
       break;
   }
 
+  if (!shader) {
+    throw "cannot create shader";
+  }
+
   // shaderにglslプログラムを割り当て
   gl.shaderSource(shader, str);
   // compile shader
   gl.compileShader(shader);
 
   // エラー処理
-  if (gl.getShaderParamaeter(shader, gl.COMPILE_STATUS)) {
-    console.log(gl.getShaderInfoLog(shader));
-  } else {
+  if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     return shader;
+  } else {
+    console.log(gl.getShaderInfoLog(shader));
   }
 }
 
-},{"./../config/":2}]},{},[4]);
+},{"./../config/":2}],9:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = creatVBO;
+function creatVBO(gl, array) {
+  // creat vertex buffer object
+  var vbo = gl.createBuffer();
+  // bind vbo to webgl
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  // set data
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(array), gl.STATIC_DRAW);
+  // clear buffer
+  gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  return vbo;
+}
+
+},{}]},{},[6]);

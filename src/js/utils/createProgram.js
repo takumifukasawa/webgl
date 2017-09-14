@@ -2,12 +2,12 @@
 export default function createProgram(gl, vs, fs) {
   const program = gl.createProgram();
 
-  gl.attatchShader(program, vs);
-  gl.attatchShader(program, fs);
+  gl.attachShader(program, vs);
+  gl.attachShader(program, fs);
 
   gl.linkProgram(program);
 
-  if(gl.getProgramParamater(program, gl.LINK_STATUS)) {
+  if(gl.getProgramParameter(program, gl.LINK_STATUS)) {
     gl.useProgram(program);
     return program;
   } else {

@@ -13,15 +13,19 @@ export default function createShader(gl, type, str) {
       break;
   }
 
+  if(!shader) {
+    throw "cannot create shader";
+  }
+
   // shaderにglslプログラムを割り当て
   gl.shaderSource(shader, str);
   // compile shader
   gl.compileShader(shader);
 
   // エラー処理
-  if(gl.getShaderParamaeter(shader, gl.COMPILE_STATUS)) {
-    console.log(gl.getShaderInfoLog(shader));
-  } else {
+  if(gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     return shader;
+  } else {
+    console.log(gl.getShaderInfoLog(shader));
   }
 }
