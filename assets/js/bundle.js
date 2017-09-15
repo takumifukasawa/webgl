@@ -17612,6 +17612,10 @@ var _setAttribute = require("./../utils/setAttribute");
 
 var _setAttribute2 = _interopRequireDefault(_setAttribute);
 
+var _createButton = require("./../utils/createButton");
+
+var _createButton2 = _interopRequireDefault(_createButton);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var vertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nuniform mat4 mvpMatrix;\nvarying vec4 v_color;\n\nvoid main(void) {\n  v_color = color;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
@@ -17659,6 +17663,8 @@ exports.default = function (canvas, gl) {
 
   var uniLocation = gl.getUniformLocation(program, "mvpMatrix");
 
+  gl.depthFunc(gl.LEQUAL);
+
   var setSize = function setSize(width, height) {
     m.lookAt([0.0, 0.0, 3.0], [0, 0, 0], [0, 1, 0], vMatrix);
     m.perspective(90, width / height, 0.1, 100, pMatrix);
@@ -17678,24 +17684,15 @@ exports.default = function (canvas, gl) {
     gl.flush();
   };
 
-  var createButton = function createButton(id, type, label) {
-    var p = document.createElement("p");
-    var input = document.createElement("input");
-    var span = document.createElement("span");
-    input.setAttribute("id", id);
-    input.setAttribute("type", type);
-    span.textContent = label;
-    p.appendChild(input);
-    p.appendChild(span);
-    return p;
-  };
-
-  var addMenu = function addMenu(parentElem) {
+  var addMenu = function addMenu(parentElemElem) {
     var frag = document.createDocumentFragment();
-    frag.appendChild(createButton("cull", "checkbox", "enable culling"));
-    frag.appendChild(createButton("front", "checkbox", "frontface (check -> CCW)"));
-    frag.appendChild(createButton("depth", "checkbox", "enable depth test"));
-    parentElem.appendChild(frag);
+    var cullButton = (0, _createButton2.default)("cull", "checkbox", "enable culling");
+    var frontButton = (0, _createButton2.default)("front", "checkbox", "frontface (check -> CCW)");
+    var depthButton = (0, _createButton2.default)("depth", "checkbox", "enable depth test");
+    frag.appendChild(cullButton.parentElem);
+    frag.appendChild(frontButton.parentElem);
+    frag.appendChild(depthButton.parentElem);
+    parentElemElem.appendChild(frag);
   };
 
   return {
@@ -17705,7 +17702,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createIBO":16,"./../utils/createProgram":17,"./../utils/createShader":18,"./../utils/createVBO":19,"./../utils/setAttribute":20,"lodash":3}],10:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createButton":16,"./../utils/createIBO":17,"./../utils/createProgram":18,"./../utils/createShader":19,"./../utils/createVBO":20,"./../utils/setAttribute":21,"lodash":3}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17847,7 +17844,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createIBO":16,"./../utils/createProgram":17,"./../utils/createShader":18,"./../utils/createVBO":19,"./../utils/setAttribute":20,"lodash":3}],12:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createIBO":17,"./../utils/createProgram":18,"./../utils/createShader":19,"./../utils/createVBO":20,"./../utils/setAttribute":21,"lodash":3}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17925,7 +17922,7 @@ function simplePolygon(canvas, gl) {
   };
 }
 
-},{"./../config/":7,"./../utils/createProgram":17,"./../utils/createShader":18,"./../utils/createVBO":19}],13:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createProgram":18,"./../utils/createShader":19,"./../utils/createVBO":20}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18028,7 +18025,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createProgram":17,"./../utils/createShader":18,"./../utils/createVBO":19,"lodash":3}],14:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createProgram":18,"./../utils/createShader":19,"./../utils/createVBO":20,"lodash":3}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18123,7 +18120,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createProgram":17,"./../utils/createShader":18,"./../utils/createVBO":19,"lodash":3}],15:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createProgram":18,"./../utils/createShader":19,"./../utils/createVBO":20,"lodash":3}],15:[function(require,module,exports){
 "use strict";
 
 var _lodash = require("lodash");
@@ -18217,6 +18214,27 @@ main();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = createButton;
+function createButton(id, type, label) {
+  var parentElem = document.createElement("p");
+  var inputElem = document.createElement("input");
+  var span = document.createElement("span");
+  inputElem.setAttribute("id", id);
+  inputElem.setAttribute("type", type);
+  span.textContent = label;
+  parentElem.appendChild(inputElem);
+  parentElem.appendChild(span);
+  return {
+    parentElem: parentElem, inputElem: inputElem
+  };
+}
+
+},{}],17:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports.default = createIBO;
 function createIBO(gl, array) {
   var ibo = gl.createBuffer();
@@ -18230,7 +18248,7 @@ function createIBO(gl, array) {
   return ibo;
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18253,7 +18271,7 @@ function createProgram(gl, vs, fs) {
   }
 }
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18292,7 +18310,7 @@ function createShader(gl, type, str) {
   }
 }
 
-},{"./../config/":7}],19:[function(require,module,exports){
+},{"./../config/":7}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18311,7 +18329,7 @@ function creatVBO(gl, array) {
   return vbo;
 }
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {

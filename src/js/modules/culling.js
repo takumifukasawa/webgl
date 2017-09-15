@@ -6,6 +6,7 @@ import createIBO from "./../utils/createIBO";
 import createShader from "./../utils/createShader";
 import createProgram from "./../utils/createProgram";
 import setAttribute from "./../utils/setAttribute";
+import createButton from "./../utils/createButton";
 
 const vertexShaderText = `
 attribute vec3 position;
@@ -85,6 +86,8 @@ export default (canvas, gl) => {
 
   const uniLocation = gl.getUniformLocation(program, "mvpMatrix");
 
+  gl.depthFunc(gl.LEQUAL);
+
   const setSize = (width, height) => {
     m.lookAt([0.0, 0.0, 3.0], [0, 0, 0], [0, 1, 0], vMatrix);
     m.perspective(90, width / height, 0.1, 100, pMatrix);
@@ -104,24 +107,15 @@ export default (canvas, gl) => {
     gl.flush();
   }
 
-  const createButton = (id, type, label) => {
-    const p = document.createElement("p");
-    const input = document.createElement("input");
-    const span = document.createElement("span");
-    input.setAttribute("id", id);
-    input.setAttribute("type", type);
-    span.textContent = label;
-    p.appendChild(input);
-    p.appendChild(span);
-    return p;
-  }
-
-  const addMenu = (parentElem) => {
+  const addMenu = (parentElemElem) => {
     const frag = document.createDocumentFragment();
-    frag.appendChild(createButton("cull", "checkbox", "enable culling"));
-    frag.appendChild(createButton("front", "checkbox", "frontface (check -> CCW)"));
-    frag.appendChild(createButton("depth", "checkbox", "enable depth test"));
-    parentElem.appendChild(frag);
+    const cullButton = createButton("cull", "checkbox", "enable culling")
+    const frontButton = createButton("front", "checkbox", "frontface (check -> CCW)");
+    const depthButton = createButton("depth", "checkbox", "enable depth test");
+    frag.appendChild(cullButton.parentElem);
+    frag.appendChild(frontButton.parentElem);
+    frag.appendChild(depthButton.parentElem);
+    parentElemElem.appendChild(frag);
   }
   
   return {
