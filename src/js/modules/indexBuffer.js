@@ -5,6 +5,7 @@ import createVBO from "./../utils/createVBO";
 import createIBO from "./../utils/createIBO";
 import createShader from "./../utils/createShader";
 import createProgram from "./../utils/createProgram";
+import setAttribute from "./../utils/setAttribute";
 
 const vertexShaderText = `
 attribute vec3 position;
@@ -70,9 +71,7 @@ export default (canvas, gl) => {
   _.forEach(attributes, attribute => {
     const attLocation = gl.getAttribLocation(program, attribute.label);
     const vbo = createVBO(gl, attribute.data);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.enableVertexAttribArray(attLocation);
-    gl.vertexAttribPointer(attLocation, attribute.stride, attribute.format, false, 0, 0);
+    setAttribute(gl, vbo, attLocation, attribute.stride);
   });
 
   const ibo = createIBO(gl, indexes);

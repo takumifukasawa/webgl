@@ -17640,6 +17640,10 @@ var _createProgram = require("./../utils/createProgram");
 
 var _createProgram2 = _interopRequireDefault(_createProgram);
 
+var _setAttribute = require("./../utils/setAttribute");
+
+var _setAttribute2 = _interopRequireDefault(_setAttribute);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var vertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nuniform mat4 mvpMatrix;\nvarying vec4 v_color;\n\nvoid main(void) {\n  v_color = color;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
@@ -17673,9 +17677,7 @@ exports.default = function (canvas, gl) {
   _lodash2.default.forEach(attributes, function (attribute) {
     var attLocation = gl.getAttribLocation(program, attribute.label);
     var vbo = (0, _createVBO2.default)(gl, attribute.data);
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.enableVertexAttribArray(attLocation);
-    gl.vertexAttribPointer(attLocation, attribute.stride, attribute.format, false, 0, 0);
+    (0, _setAttribute2.default)(gl, vbo, attLocation, attribute.stride);
   });
 
   var ibo = (0, _createIBO2.default)(gl, indexes);
@@ -17714,7 +17716,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createIBO":15,"./../utils/createProgram":16,"./../utils/createShader":17,"./../utils/createVBO":18,"lodash":3}],11:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createIBO":15,"./../utils/createProgram":16,"./../utils/createShader":17,"./../utils/createVBO":18,"./../utils/setAttribute":19,"lodash":3}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18170,6 +18172,21 @@ function creatVBO(gl, array) {
   // clear buffer
   gl.bindBuffer(gl.ARRAY_BUFFER, null);
   return vbo;
+}
+
+},{}],19:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = setAttribute;
+function setAttribute(gl, vbo, attLocation, stride) {
+  var format = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : gl.FLOAT;
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.enableVertexAttribArray(attLocation);
+  gl.vertexAttribPointer(attLocation, stride, format, false, 0, 0);
 }
 
 },{}]},{},[14]);
