@@ -17623,6 +17623,10 @@ var vertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nunifo
 var fragmentShaderText = "\nprecision mediump float;\n\nvarying vec4 v_color;\n\nvoid main(void) {\n  gl_FragColor = v_color;\n}\n";
 
 exports.default = function (canvas, gl) {
+  var cullButton = void 0,
+      frontButton = void 0,
+      depthButton = void 0;
+
   var positions = [0.0, 1.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0];
 
   var colors = [1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
@@ -17659,6 +17663,7 @@ exports.default = function (canvas, gl) {
   var mMatrix = m.identity(m.create());
   var vMatrix = m.identity(m.create());
   var pMatrix = m.identity(m.create());
+  var tmpMatrix = m.identity(m.create());
   var mvpMatrix = m.identity(m.create());
 
   var uniLocation = gl.getUniformLocation(program, "mvpMatrix");
@@ -17666,29 +17671,52 @@ exports.default = function (canvas, gl) {
   gl.depthFunc(gl.LEQUAL);
 
   var setSize = function setSize(width, height) {
-    m.lookAt([0.0, 0.0, 3.0], [0, 0, 0], [0, 1, 0], vMatrix);
-    m.perspective(90, width / height, 0.1, 100, pMatrix);
-    m.multiply(pMatrix, vMatrix, mvpMatrix);
-    m.multiply(mvpMatrix, mMatrix, mvpMatrix);
+    m.lookAt([0.0, 0.0, 5.0], [0, 0, 0], [0, 1, 0], vMatrix);
+    m.perspective(45, width / height, 0.1, 100, pMatrix);
+    m.multiply(pMatrix, vMatrix, tmpMatrix);
 
     gl.viewport(0, 0, width, height);
   };
 
   var tick = function tick(time) {
+    !!cullButton.inputElem.checked ? gl.enable(gl.CULL_FACE) : gl.disable(gl.CULL_FACE);
+
+    !!frontButton.inputElem.checked ? gl.frontFace(gl.CCW) : gl.frontFace(gl.CW);
+
+    !!depthButton.inputElem.checked ? gl.enable(gl.DEPTH_TEST) : gl.disable(gl.DEPTH_TEST);
+
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    var rad1 = time / 50 % 360 * Math.PI / 180;
+    var x1 = Math.cos(rad1) * 1.8;
+    var z1 = Math.sin(rad1) * 1.8;
+    m.identity(mMatrix);
+    m.translate(mMatrix, [x1, 0.0, z1], mMatrix);
+    m.rotate(mMatrix, rad1, [1, 0, 0], mMatrix);
+    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
     gl.uniformMatrix4fv(uniLocation, false, mvpMatrix);
-
     gl.drawElements(gl.TRIANGLES, indexes.length, gl.UNSIGNED_SHORT, 0);
+
+    var rad2 = time / 30 % 360 * Math.PI / 180;
+    var x2 = Math.cos(rad2) * 1.5;
+    var z2 = Math.sin(rad2) * 1.5;
+    m.identity(mMatrix);
+    m.translate(mMatrix, [-x2, 0.0, -z2], mMatrix);
+    m.rotate(mMatrix, rad2, [0, 1, 0], mMatrix);
+    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
+    gl.uniformMatrix4fv(uniLocation, false, mvpMatrix);
+    gl.drawElements(gl.TRIANGLES, indexes.length, gl.UNSIGNED_SHORT, 0);
+
     gl.flush();
   };
 
   var addMenu = function addMenu(parentElemElem) {
     var frag = document.createDocumentFragment();
-    var cullButton = (0, _createButton2.default)("cull", "checkbox", "enable culling");
-    var frontButton = (0, _createButton2.default)("front", "checkbox", "frontface (check -> CCW)");
-    var depthButton = (0, _createButton2.default)("depth", "checkbox", "enable depth test");
+    cullButton = (0, _createButton2.default)("cull", "checkbox", "enable culling");
+    frontButton = (0, _createButton2.default)("front", "checkbox", "frontface (check -> CCW)");
+    depthButton = (0, _createButton2.default)("depth", "checkbox", "enable depth test");
     frag.appendChild(cullButton.parentElem);
     frag.appendChild(frontButton.parentElem);
     frag.appendChild(depthButton.parentElem);
@@ -18196,9 +18224,9 @@ function main() {
   controller = controllerFunc(canvas, gl);
 
   if (controller.addMenu) {
-    var menu = document.querySelector(".menu");
-    menu.style.display = "block";
-    controller.addMenu(menu);
+    var ui = document.querySelector(".ui");
+    ui.style.display = "block";
+    controller.addMenu(ui);
   }
 
   onWindowResize();

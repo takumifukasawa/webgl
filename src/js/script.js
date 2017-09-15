@@ -58,9 +58,9 @@ function main() {
   controller = controllerFunc(canvas, gl);
  
   if(controller.addMenu) {
-    const menu = document.querySelector(".menu");
-    menu.style.display = "block";
-    controller.addMenu(menu);
+    const ui = document.querySelector(".ui");
+    ui.style.display = "block";
+    controller.addMenu(ui);
   }
 
   onWindowResize();

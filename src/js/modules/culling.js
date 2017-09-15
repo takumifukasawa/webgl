@@ -31,6 +31,8 @@ void main(void) {
 `;
 
 export default (canvas, gl) => {
+  let cullButton, frontButton, depthButton;
+  
   const positions = [
     0.0, 1.0, 0.0,
     1.0, 0.0, 0.0,
@@ -82,6 +84,7 @@ export default (canvas, gl) => {
   const mMatrix = m.identity(m.create());
   const vMatrix = m.identity(m.create());
   const pMatrix = m.identity(m.create());
+  const tmpMatrix = m.identity(m.create());
   const mvpMatrix = m.identity(m.create());
 
   const uniLocation = gl.getUniformLocation(program, "mvpMatrix");
@@ -89,29 +92,58 @@ export default (canvas, gl) => {
   gl.depthFunc(gl.LEQUAL);
 
   const setSize = (width, height) => {
-    m.lookAt([0.0, 0.0, 3.0], [0, 0, 0], [0, 1, 0], vMatrix);
-    m.perspective(90, width / height, 0.1, 100, pMatrix);
-    m.multiply(pMatrix, vMatrix, mvpMatrix);
-    m.multiply(mvpMatrix, mMatrix, mvpMatrix);
+    m.lookAt([0.0, 0.0, 5.0], [0, 0, 0], [0, 1, 0], vMatrix);
+    m.perspective(45, width / height, 0.1, 100, pMatrix);
+    m.multiply(pMatrix, vMatrix, tmpMatrix);
 
     gl.viewport(0, 0, width, height);
   }
 
   const tick = (time) => {
+    !!cullButton.inputElem.checked
+      ? gl.enable(gl.CULL_FACE)
+      : gl.disable(gl.CULL_FACE);
+
+    !!frontButton.inputElem.checked
+      ? gl.frontFace(gl.CCW)
+      : gl.frontFace(gl.CW);
+
+    !!depthButton.inputElem.checked
+      ? gl.enable(gl.DEPTH_TEST)
+      : gl.disable(gl.DEPTH_TEST);
+
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearDepth(1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    const rad1 = ((time / 50) % 360) * Math.PI / 180;
+    const x1 = Math.cos(rad1) * 1.8;
+    const z1 = Math.sin(rad1) * 1.8;
+    m.identity(mMatrix);
+    m.translate(mMatrix, [x1, 0.0, z1], mMatrix);
+    m.rotate(mMatrix, rad1, [1, 0, 0], mMatrix);
+    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
     gl.uniformMatrix4fv(uniLocation, false, mvpMatrix);
-
     gl.drawElements(gl.TRIANGLES, indexes.length, gl.UNSIGNED_SHORT, 0);
+
+    const rad2 = ((time / 30) % 360) * Math.PI / 180;
+    const x2 = Math.cos(rad2) * 1.5;
+    const z2 = Math.sin(rad2) * 1.5;
+    m.identity(mMatrix);
+    m.translate(mMatrix, [-x2, 0.0, -z2], mMatrix);
+    m.rotate(mMatrix, rad2, [0, 1, 0], mMatrix);
+    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
+    gl.uniformMatrix4fv(uniLocation, false, mvpMatrix);
+    gl.drawElements(gl.TRIANGLES, indexes.length, gl.UNSIGNED_SHORT, 0);
+
     gl.flush();
   }
 
   const addMenu = (parentElemElem) => {
     const frag = document.createDocumentFragment();
-    const cullButton = createButton("cull", "checkbox", "enable culling")
-    const frontButton = createButton("front", "checkbox", "frontface (check -> CCW)");
-    const depthButton = createButton("depth", "checkbox", "enable depth test");
+    cullButton = createButton("cull", "checkbox", "enable culling")
+    frontButton = createButton("front", "checkbox", "frontface (check -> CCW)");
+    depthButton = createButton("depth", "checkbox", "enable depth test");
     frag.appendChild(cullButton.parentElem);
     frag.appendChild(frontButton.parentElem);
     frag.appendChild(depthButton.parentElem);
