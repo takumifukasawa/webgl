@@ -56,7 +56,13 @@ function main() {
   }
    
   controller = controllerFunc(canvas, gl);
-  
+ 
+  if(controller.addMenu) {
+    const menu = document.querySelector(".menu");
+    menu.style.display = "block";
+    controller.addMenu(menu);
+  }
+
   onWindowResize();
   window.addEventListener("resize", onWindowResize);
   requestAnimationFrame(tick);

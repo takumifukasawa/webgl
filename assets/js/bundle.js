@@ -17586,6 +17586,132 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _lodash = require("lodash");
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _config = require("./../config/");
+
+var _createVBO = require("./../utils/createVBO");
+
+var _createVBO2 = _interopRequireDefault(_createVBO);
+
+var _createIBO = require("./../utils/createIBO");
+
+var _createIBO2 = _interopRequireDefault(_createIBO);
+
+var _createShader = require("./../utils/createShader");
+
+var _createShader2 = _interopRequireDefault(_createShader);
+
+var _createProgram = require("./../utils/createProgram");
+
+var _createProgram2 = _interopRequireDefault(_createProgram);
+
+var _setAttribute = require("./../utils/setAttribute");
+
+var _setAttribute2 = _interopRequireDefault(_setAttribute);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var vertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nuniform mat4 mvpMatrix;\nvarying vec4 v_color;\n\nvoid main(void) {\n  v_color = color;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
+
+var fragmentShaderText = "\nprecision mediump float;\n\nvarying vec4 v_color;\n\nvoid main(void) {\n  gl_FragColor = v_color;\n}\n";
+
+exports.default = function (canvas, gl) {
+  var positions = [0.0, 1.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, -1.0, 0.0];
+
+  var colors = [1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+
+  var indexes = [0, 1, 2, 1, 2, 3];
+
+  var vertexShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.VERTEX_SHADER, vertexShaderText);
+  var fragmentShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.FRAGMENT_SHADER, fragmentShaderText);
+
+  var program = (0, _createProgram2.default)(gl, vertexShader, fragmentShader);
+
+  var attributes = [{
+    label: "position",
+    stride: 3,
+    data: positions,
+    format: gl.FLOAT
+  }, {
+    label: "color",
+    stride: 4,
+    data: colors,
+    format: gl.FLOAT
+  }];
+
+  _lodash2.default.forEach(attributes, function (attribute) {
+    var attLocation = gl.getAttribLocation(program, attribute.label);
+    var vbo = (0, _createVBO2.default)(gl, attribute.data);
+    (0, _setAttribute2.default)(gl, vbo, attLocation, attribute.stride);
+  });
+
+  var ibo = (0, _createIBO2.default)(gl, indexes);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
+
+  var m = new matIV();
+  var mMatrix = m.identity(m.create());
+  var vMatrix = m.identity(m.create());
+  var pMatrix = m.identity(m.create());
+  var mvpMatrix = m.identity(m.create());
+
+  var uniLocation = gl.getUniformLocation(program, "mvpMatrix");
+
+  var setSize = function setSize(width, height) {
+    m.lookAt([0.0, 0.0, 3.0], [0, 0, 0], [0, 1, 0], vMatrix);
+    m.perspective(90, width / height, 0.1, 100, pMatrix);
+    m.multiply(pMatrix, vMatrix, mvpMatrix);
+    m.multiply(mvpMatrix, mMatrix, mvpMatrix);
+
+    gl.viewport(0, 0, width, height);
+  };
+
+  var tick = function tick(time) {
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    gl.uniformMatrix4fv(uniLocation, false, mvpMatrix);
+
+    gl.drawElements(gl.TRIANGLES, indexes.length, gl.UNSIGNED_SHORT, 0);
+    gl.flush();
+  };
+
+  var createButton = function createButton(id, type, label) {
+    var p = document.createElement("p");
+    var input = document.createElement("input");
+    var span = document.createElement("span");
+    input.setAttribute("id", id);
+    input.setAttribute("type", type);
+    span.textContent = label;
+    p.appendChild(input);
+    p.appendChild(span);
+    return p;
+  };
+
+  var addMenu = function addMenu(parentElem) {
+    var frag = document.createDocumentFragment();
+    frag.appendChild(createButton("cull", "checkbox", "enable culling"));
+    frag.appendChild(createButton("front", "checkbox", "frontface (check -> CCW)"));
+    frag.appendChild(createButton("depth", "checkbox", "enable depth test"));
+    parentElem.appendChild(frag);
+  };
+
+  return {
+    setSize: setSize,
+    tick: tick,
+    addMenu: addMenu
+  };
+};
+
+},{"./../config/":7,"./../utils/createIBO":16,"./../utils/createProgram":17,"./../utils/createShader":18,"./../utils/createVBO":19,"./../utils/setAttribute":20,"lodash":3}],10:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
 var _simplePolygon = require("./simplePolygon");
 
 var _simplePolygon2 = _interopRequireDefault(_simplePolygon);
@@ -17602,16 +17728,21 @@ var _indexBuffer = require("./indexBuffer");
 
 var _indexBuffer2 = _interopRequireDefault(_indexBuffer);
 
+var _culling = require("./culling");
+
+var _culling2 = _interopRequireDefault(_culling);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
   simplePolygon: _simplePolygon2.default,
   vertexColor: _vertexColor2.default,
   translateTriangle: _translateTriangle2.default,
-  indexBuffer: _indexBuffer2.default
+  indexBuffer: _indexBuffer2.default,
+  culling: _culling2.default
 };
 
-},{"./indexBuffer":10,"./simplePolygon":11,"./translateTriangle":12,"./vertexColor":13}],10:[function(require,module,exports){
+},{"./culling":9,"./indexBuffer":11,"./simplePolygon":12,"./translateTriangle":13,"./vertexColor":14}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17716,7 +17847,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createIBO":15,"./../utils/createProgram":16,"./../utils/createShader":17,"./../utils/createVBO":18,"./../utils/setAttribute":19,"lodash":3}],11:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createIBO":16,"./../utils/createProgram":17,"./../utils/createShader":18,"./../utils/createVBO":19,"./../utils/setAttribute":20,"lodash":3}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17794,7 +17925,7 @@ function simplePolygon(canvas, gl) {
   };
 }
 
-},{"./../config/":7,"./../utils/createProgram":16,"./../utils/createShader":17,"./../utils/createVBO":18}],12:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createProgram":17,"./../utils/createShader":18,"./../utils/createVBO":19}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17897,7 +18028,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createProgram":16,"./../utils/createShader":17,"./../utils/createVBO":18,"lodash":3}],13:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createProgram":17,"./../utils/createShader":18,"./../utils/createVBO":19,"lodash":3}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17992,7 +18123,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createProgram":16,"./../utils/createShader":17,"./../utils/createVBO":18,"lodash":3}],14:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createProgram":17,"./../utils/createShader":18,"./../utils/createVBO":19,"lodash":3}],15:[function(require,module,exports){
 "use strict";
 
 var _lodash = require("lodash");
@@ -18067,6 +18198,12 @@ function main() {
 
   controller = controllerFunc(canvas, gl);
 
+  if (controller.addMenu) {
+    var menu = document.querySelector(".menu");
+    menu.style.display = "block";
+    controller.addMenu(menu);
+  }
+
   onWindowResize();
   window.addEventListener("resize", onWindowResize);
   requestAnimationFrame(tick);
@@ -18074,7 +18211,7 @@ function main() {
 
 main();
 
-},{"./modules/":9,"lodash":3,"query-string":5}],15:[function(require,module,exports){
+},{"./modules/":10,"lodash":3,"query-string":5}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18093,7 +18230,7 @@ function createIBO(gl, array) {
   return ibo;
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18116,7 +18253,7 @@ function createProgram(gl, vs, fs) {
   }
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18155,7 +18292,7 @@ function createShader(gl, type, str) {
   }
 }
 
-},{"./../config/":7}],18:[function(require,module,exports){
+},{"./../config/":7}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18174,7 +18311,7 @@ function creatVBO(gl, array) {
   return vbo;
 }
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18189,4 +18326,4 @@ function setAttribute(gl, vbo, attLocation, stride) {
   gl.vertexAttribPointer(attLocation, stride, format, false, 0, 0);
 }
 
-},{}]},{},[14]);
+},{}]},{},[15]);
