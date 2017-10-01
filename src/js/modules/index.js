@@ -11,6 +11,7 @@ import specular from "./specular";
 import phongShading from "./phongShading";
 import pointLight from "./pointLight";
 import texture from "./texture";
+import multiTexture from "./multiTexture";
 
 export default {
   simplePolygon,
@@ -24,5 +25,6 @@ export default {
   specular,
   phongShading,
   pointLight,
-  texture
+  texture,
+  multiTexture
 };
