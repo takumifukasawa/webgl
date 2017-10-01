@@ -9,6 +9,7 @@ import directionalLight from "./directionalLight";
 import ambientLight from "./ambientLight";
 import specular from "./specular";
 import phongShading from "./phongShading";
+import pointLight from "./pointLight";
 
 export default {
   simplePolygon,
@@ -20,5 +21,6 @@ export default {
   directionalLight,
   ambientLight,
   specular,
-  phongShading
+  phongShading,
+  pointLight
 };

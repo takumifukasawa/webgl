@@ -17718,7 +17718,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createIBO":22,"./../utils/createProgram":23,"./../utils/createShader":24,"./../utils/createTorusGeometry":25,"./../utils/createVBO":26,"./../utils/setAttribute":28,"lodash":3}],10:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createIBO":23,"./../utils/createProgram":24,"./../utils/createShader":25,"./../utils/createTorusGeometry":27,"./../utils/createVBO":28,"./../utils/setAttribute":30,"lodash":3}],10:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17869,7 +17869,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createButton":21,"./../utils/createIBO":22,"./../utils/createProgram":23,"./../utils/createShader":24,"./../utils/createVBO":26,"./../utils/setAttribute":28,"lodash":3}],11:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createButton":22,"./../utils/createIBO":23,"./../utils/createProgram":24,"./../utils/createShader":25,"./../utils/createVBO":28,"./../utils/setAttribute":30,"lodash":3}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18005,7 +18005,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createIBO":22,"./../utils/createProgram":23,"./../utils/createShader":24,"./../utils/createTorusGeometry":25,"./../utils/createVBO":26,"./../utils/setAttribute":28,"lodash":3}],12:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createIBO":23,"./../utils/createProgram":24,"./../utils/createShader":25,"./../utils/createTorusGeometry":27,"./../utils/createVBO":28,"./../utils/setAttribute":30,"lodash":3}],12:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18052,6 +18052,10 @@ var _phongShading = require("./phongShading");
 
 var _phongShading2 = _interopRequireDefault(_phongShading);
 
+var _pointLight = require("./pointLight");
+
+var _pointLight2 = _interopRequireDefault(_pointLight);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
@@ -18064,10 +18068,11 @@ exports.default = {
   directionalLight: _directionalLight2.default,
   ambientLight: _ambientLight2.default,
   specular: _specular2.default,
-  phongShading: _phongShading2.default
+  phongShading: _phongShading2.default,
+  pointLight: _pointLight2.default
 };
 
-},{"./ambientLight":9,"./culling":10,"./directionalLight":11,"./indexBuffer":13,"./phongShading":14,"./simplePolygon":15,"./simpleTorus":16,"./specular":17,"./translateTriangle":18,"./vertexColor":19}],13:[function(require,module,exports){
+},{"./ambientLight":9,"./culling":10,"./directionalLight":11,"./indexBuffer":13,"./phongShading":14,"./pointLight":15,"./simplePolygon":16,"./simpleTorus":17,"./specular":18,"./translateTriangle":19,"./vertexColor":20}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18172,7 +18177,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createIBO":22,"./../utils/createProgram":23,"./../utils/createShader":24,"./../utils/createVBO":26,"./../utils/setAttribute":28,"lodash":3}],14:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createIBO":23,"./../utils/createProgram":24,"./../utils/createShader":25,"./../utils/createVBO":28,"./../utils/setAttribute":30,"lodash":3}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18314,7 +18319,205 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createIBO":22,"./../utils/createProgram":23,"./../utils/createShader":24,"./../utils/createTorusGeometry":25,"./../utils/createVBO":26,"./../utils/setAttribute":28,"lodash":3}],15:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createIBO":23,"./../utils/createProgram":24,"./../utils/createShader":25,"./../utils/createTorusGeometry":27,"./../utils/createVBO":28,"./../utils/setAttribute":30,"lodash":3}],15:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _lodash = require("lodash");
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _config = require("./../config/");
+
+var _createVBO = require("./../utils/createVBO");
+
+var _createVBO2 = _interopRequireDefault(_createVBO);
+
+var _createIBO = require("./../utils/createIBO");
+
+var _createIBO2 = _interopRequireDefault(_createIBO);
+
+var _createShader = require("./../utils/createShader");
+
+var _createShader2 = _interopRequireDefault(_createShader);
+
+var _createProgram = require("./../utils/createProgram");
+
+var _createProgram2 = _interopRequireDefault(_createProgram);
+
+var _setAttribute = require("./../utils/setAttribute");
+
+var _setAttribute2 = _interopRequireDefault(_setAttribute);
+
+var _createTorusGeometry = require("./../utils/createTorusGeometry");
+
+var _createTorusGeometry2 = _interopRequireDefault(_createTorusGeometry);
+
+var _createSphere = require("./../utils/createSphere");
+
+var _createSphere2 = _interopRequireDefault(_createSphere);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var vertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nattribute vec3 normal;\nuniform mat4 mMatrix;\nuniform mat4 mvpMatrix;\nvarying vec3 v_position;\nvarying vec4 v_color;\nvarying vec3 v_normal;\n\nvoid main(void) {\n  v_position = (mMatrix * vec4(position, 1.)).xyz;\n  v_normal = normal;\n  v_color = color;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
+
+var fragmentShaderText = "\nprecision mediump float;\n\nuniform mat4 invMatrix;\nuniform vec3 eyeDirection;\nuniform vec4 ambientColor;\nuniform vec3 lightPosition;\nvarying vec4 v_color;\nvarying vec3 v_normal;\nvarying vec3 v_position;\n\nvoid main(void) {\n  vec3 lightVec = lightPosition - v_position;\n  vec3 invLight = normalize(invMatrix * vec4(lightVec, 0.)).xyz;\n  vec3 invEye = normalize(invMatrix * vec4(eyeDirection, 0.0)).xyz;\n  vec3 halfLE = normalize(invLight + invEye);\n  float diffuse = clamp(dot(v_normal, invLight), 0., 1.);\n  float specular = pow(clamp(dot(v_normal, halfLE), 0., 1.), 50.);\n  vec4 light = v_color * vec4(vec3(diffuse), 1.0) + vec4(vec3(specular), 1.);\n  vec4 color = light + ambientColor;\n  \n  gl_FragColor = color;\n}\n";
+
+exports.default = function (canvas, gl) {
+  var vertexShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.VERTEX_SHADER, vertexShaderText);
+  var fragmentShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.FRAGMENT_SHADER, fragmentShaderText);
+
+  var program = (0, _createProgram2.default)(gl, vertexShader, fragmentShader);
+
+  // 使い回す attribute location
+  var attributesList = {
+    position: {
+      location: gl.getAttribLocation(program, "position"),
+      stride: 3
+    },
+    color: {
+      location: gl.getAttribLocation(program, "color"),
+      stride: 4
+    },
+    normal: {
+      location: gl.getAttribLocation(program, "normal"),
+      stride: 3
+    }
+  };
+
+  // create torus
+  var torus = (0, _createTorusGeometry2.default)(32, 32, 1.0, 2.0, [0.75, 0.25, 0.25, 1.0]);
+  var torusAttributes = [{
+    label: "position",
+    data: torus.positions
+  }, {
+    label: "color",
+    data: torus.colors
+  }, {
+    label: "normal",
+    data: torus.normals
+  }];
+  var torusVBOList = {};
+  _lodash2.default.forEach(torusAttributes, function (attribute) {
+    torusVBOList[attribute.label] = (0, _createVBO2.default)(gl, attribute.data);
+  });
+  var torusIbo = (0, _createIBO2.default)(gl, torus.indexes);
+
+  // create shpere
+  var sphere = (0, _createSphere2.default)(64, 64, 2.0, [0.25, 0.25, 0.75, 1.0]);
+  var sphereAttributes = [{
+    label: "position",
+    data: sphere.positions
+  }, {
+    label: "color",
+    data: sphere.colors
+  }, {
+    label: "normal",
+    data: sphere.normals
+  }];
+  var sphereVBOList = {};
+  _lodash2.default.forEach(sphereAttributes, function (attribute) {
+    sphereVBOList[attribute.label] = (0, _createVBO2.default)(gl, attribute.data);
+  });
+  var sphereIbo = (0, _createIBO2.default)(gl, sphere.indexes);
+
+  var lightPosition = [0.0, 0.0, 0.0];
+  var ambientColor = [0.1, 0.1, 0.1, 1.0];
+  var eyeDirection = [0.0, 0.0, 20.0];
+
+  var m = new matIV();
+  var mMatrix = m.identity(m.create());
+  var vMatrix = m.identity(m.create());
+  var pMatrix = m.identity(m.create());
+  var tmpMatrix = m.identity(m.create());
+  var mvpMatrix = m.identity(m.create());
+  var invMatrix = m.identity(m.create());
+
+  var uniLocation = {};
+  uniLocation.mvpMatrix = gl.getUniformLocation(program, "mvpMatrix");
+  uniLocation.mMatrix = gl.getUniformLocation(program, "mMatrix");
+  uniLocation.invMatrix = gl.getUniformLocation(program, "invMatrix");
+  uniLocation.lightPosition = gl.getUniformLocation(program, "lightPosition");
+  uniLocation.ambientColor = gl.getUniformLocation(program, "ambientColor");
+  uniLocation.eyeDirection = gl.getUniformLocation(program, "eyeDirection");
+
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
+  gl.enable(gl.CULL_FACE);
+
+  var setSize = function setSize(width, height) {
+    m.lookAt([0.0, 0.0, 20.0], [0, 0, 0], [0, 1, 0], vMatrix);
+    m.perspective(45, width / height, 0.1, 100, pMatrix);
+    m.multiply(pMatrix, vMatrix, tmpMatrix);
+
+    gl.viewport(0, 0, width, height);
+  };
+
+  var tick = function tick(time) {
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearDepth(1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    var rad = time / 20 % 360 * Math.PI / 180;
+    var tx = Math.cos(rad) * 3.5;
+    var ty = Math.sin(rad) * 3.5;
+    var tz = Math.sin(rad) * 3.5;
+
+    // common uniforms
+    gl.uniform3fv(uniLocation.lightPosition, lightPosition);
+    gl.uniform4fv(uniLocation.ambientColor, ambientColor);
+    gl.uniform3fv(uniLocation.eyeDirection, eyeDirection);
+
+    // 1. torus
+
+    _lodash2.default.forEach(torusVBOList, function (vbo, label) {
+      var attributeData = attributesList[label];
+      (0, _setAttribute2.default)(gl, vbo, attributeData.location, attributeData.stride);
+    });
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, torusIbo);
+
+    m.identity(mMatrix);
+    m.translate(mMatrix, [tx, -ty, -tz], mMatrix);
+    m.rotate(mMatrix, rad, [0, 1, 1], mMatrix);
+    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
+    m.inverse(mMatrix, invMatrix);
+
+    gl.uniformMatrix4fv(uniLocation.mvpMatrix, false, mvpMatrix);
+    gl.uniformMatrix4fv(uniLocation.mMatrix, false, mMatrix);
+    gl.uniformMatrix4fv(uniLocation.invMatrix, false, invMatrix);
+    gl.drawElements(gl.TRIANGLES, torus.indexes.length, gl.UNSIGNED_SHORT, 0);
+
+    // 2. sphere
+
+    _lodash2.default.forEach(sphereVBOList, function (vbo, label) {
+      var attributeData = attributesList[label];
+      (0, _setAttribute2.default)(gl, vbo, attributeData.location, attributeData.stride);
+    });
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereIbo);
+
+    m.identity(mMatrix);
+    m.translate(mMatrix, [-tx, ty, tz], mMatrix);
+    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
+    m.inverse(mMatrix, invMatrix);
+
+    gl.uniformMatrix4fv(uniLocation.mvpMatrix, false, mvpMatrix);
+    gl.uniformMatrix4fv(uniLocation.mMatrix, false, mMatrix);
+    gl.uniformMatrix4fv(uniLocation.invMatrix, false, invMatrix);
+    gl.drawElements(gl.TRIANGLES, sphere.indexes.length, gl.UNSIGNED_SHORT, 0);
+
+    gl.flush();
+  };
+
+  return {
+    setSize: setSize,
+    tick: tick
+  };
+};
+
+},{"./../config/":7,"./../utils/createIBO":23,"./../utils/createProgram":24,"./../utils/createShader":25,"./../utils/createSphere":26,"./../utils/createTorusGeometry":27,"./../utils/createVBO":28,"./../utils/setAttribute":30,"lodash":3}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18392,7 +18595,7 @@ function simplePolygon(canvas, gl) {
   };
 }
 
-},{"./../config/":7,"./../utils/createProgram":23,"./../utils/createShader":24,"./../utils/createVBO":26}],16:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createProgram":24,"./../utils/createShader":25,"./../utils/createVBO":28}],17:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18510,7 +18713,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createIBO":22,"./../utils/createProgram":23,"./../utils/createShader":24,"./../utils/createTorusGeometry":25,"./../utils/createVBO":26,"./../utils/setAttribute":28,"lodash":3}],17:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createIBO":23,"./../utils/createProgram":24,"./../utils/createShader":25,"./../utils/createTorusGeometry":27,"./../utils/createVBO":28,"./../utils/setAttribute":30,"lodash":3}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18652,7 +18855,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createIBO":22,"./../utils/createProgram":23,"./../utils/createShader":24,"./../utils/createTorusGeometry":25,"./../utils/createVBO":26,"./../utils/setAttribute":28,"lodash":3}],18:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createIBO":23,"./../utils/createProgram":24,"./../utils/createShader":25,"./../utils/createTorusGeometry":27,"./../utils/createVBO":28,"./../utils/setAttribute":30,"lodash":3}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18755,7 +18958,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createProgram":23,"./../utils/createShader":24,"./../utils/createVBO":26,"lodash":3}],19:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createProgram":24,"./../utils/createShader":25,"./../utils/createVBO":28,"lodash":3}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18850,7 +19053,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":7,"./../utils/createProgram":23,"./../utils/createShader":24,"./../utils/createVBO":26,"lodash":3}],20:[function(require,module,exports){
+},{"./../config/":7,"./../utils/createProgram":24,"./../utils/createShader":25,"./../utils/createVBO":28,"lodash":3}],21:[function(require,module,exports){
 "use strict";
 
 var _lodash = require("lodash");
@@ -18938,7 +19141,7 @@ function main() {
 
 main();
 
-},{"./modules/":12,"lodash":3,"query-string":5}],21:[function(require,module,exports){
+},{"./modules/":12,"lodash":3,"query-string":5}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18959,7 +19162,7 @@ function createButton(id, type, label) {
   };
 }
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18978,7 +19181,7 @@ function createIBO(gl, array) {
   return ibo;
 }
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19001,7 +19204,7 @@ function createProgram(gl, vs, fs) {
   }
 }
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19040,7 +19243,50 @@ function createShader(gl, type, str) {
   }
 }
 
-},{"./../config/":7}],25:[function(require,module,exports){
+},{"./../config/":7}],26:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = sphere;
+function sphere(row, column, rad, color) {
+  var positions = new Array();
+  var normals = new Array();
+  var colors = new Array();
+  var indexes = new Array();
+
+  for (var i = 0; i <= row; i++) {
+    var r = Math.PI / row * i;
+    var ry = Math.cos(r);
+    var rr = Math.sin(r);
+    for (var ii = 0; ii <= column; ii++) {
+      var tr = Math.PI * 2 / column * ii;
+      var tx = rr * rad * Math.cos(tr);
+      var ty = ry * rad;
+      var tz = rr * rad * Math.sin(tr);
+      var rx = rr * Math.cos(tr);
+      var rz = rr * Math.sin(tr);
+      var tc = color ? color : hsva(360 / row * i, 1, 1, 1);
+      positions.push(tx, ty, tz);
+      normals.push(rx, ry, rz);
+      tc.forEach(function (val) {
+        return colors.push(val);
+      });
+    }
+  }
+  for (var _i = 0; _i < row; _i++) {
+    for (var _ii = 0; _ii < column; _ii++) {
+      var _r = (column + 1) * _i + _ii;
+      indexes.push(_r, _r + 1, _r + column + 2);
+      indexes.push(_r, _r + column + 2, _r + column + 1);
+    }
+  }
+
+  return { positions: positions, normals: normals, indexes: indexes, colors: colors };
+}
+
+},{}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19054,7 +19300,7 @@ var _hsva2 = _interopRequireDefault(_hsva);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function createTorusGeometry(row, col, irad, orad) {
+function createTorusGeometry(row, column, irad, orad, color) {
   var positions = new Array();
   var colors = new Array();
   var indexes = new Array();
@@ -19064,8 +19310,8 @@ function createTorusGeometry(row, col, irad, orad) {
     var r = Math.PI * 2 / row * i;
     var rr = Math.cos(r);
     var ry = Math.sin(r);
-    for (var ii = 0; ii <= col; ii++) {
-      var tr = Math.PI * 2 / col * ii;
+    for (var ii = 0; ii <= column; ii++) {
+      var tr = Math.PI * 2 / column * ii;
       var tx = (rr * irad + orad) * Math.cos(tr);
       var ty = ry * irad;
       var tz = (rr * irad + orad) * Math.sin(tr);
@@ -19073,7 +19319,7 @@ function createTorusGeometry(row, col, irad, orad) {
       var rz = rr * Math.sin(tr);
       positions.push(tx, ty, tz);
       normals.push(rx, ry, rz);
-      var tc = (0, _hsva2.default)(360 / col * ii, 1, 1, 1);
+      var tc = color ? color : (0, _hsva2.default)(360 / column * ii, 1, 1, 1);
       tc.forEach(function (val) {
         return colors.push(val);
       });
@@ -19081,17 +19327,17 @@ function createTorusGeometry(row, col, irad, orad) {
   }
 
   for (var _i = 0; _i < row; _i++) {
-    for (var _ii = 0; _ii < col; _ii++) {
-      var _r = (col + 1) * _i + _ii;
-      indexes.push(_r, _r + col + 1, _r + 1);
-      indexes.push(_r + col + 1, _r + col + 2, _r + 1);
+    for (var _ii = 0; _ii < column; _ii++) {
+      var _r = (column + 1) * _i + _ii;
+      indexes.push(_r, _r + column + 1, _r + 1);
+      indexes.push(_r + column + 1, _r + column + 2, _r + 1);
     }
   }
 
   return { positions: positions, colors: colors, indexes: indexes, normals: normals };
 }
 
-},{"./../utils/hsva":27}],26:[function(require,module,exports){
+},{"./../utils/hsva":29}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19110,7 +19356,7 @@ function creatVBO(gl, array) {
   return vbo;
 }
 
-},{}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19142,7 +19388,7 @@ function hsva(h, s, v, a) {
   return color;
 }
 
-},{}],28:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19157,4 +19403,4 @@ function setAttribute(gl, vbo, attLocation, stride) {
   gl.vertexAttribPointer(attLocation, stride, format, false, 0, 0);
 }
 
-},{}]},{},[20]);
+},{}]},{},[21]);
