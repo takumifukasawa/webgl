@@ -10,6 +10,7 @@ import ambientLight from "./ambientLight";
 import specular from "./specular";
 import phongShading from "./phongShading";
 import pointLight from "./pointLight";
+import texture from "./texture";
 
 export default {
   simplePolygon,
@@ -22,5 +23,6 @@ export default {
   ambientLight,
   specular,
   phongShading,
-  pointLight
+  pointLight,
+  texture
 };
