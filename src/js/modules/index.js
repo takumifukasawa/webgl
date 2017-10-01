@@ -7,6 +7,8 @@ import culling from "./culling";
 import simpleTorus from "./simpleTorus";
 import directionalLight from "./directionalLight";
 import ambientLight from "./ambientLight";
+import specular from "./specular";
+import phongShading from "./phongShading";
 
 export default {
   simplePolygon,
@@ -16,5 +18,7 @@ export default {
   culling,
   simpleTorus,
   directionalLight,
-  ambientLight
+  ambientLight,
+  specular,
+  phongShading
 };
