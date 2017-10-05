@@ -12,6 +12,7 @@ import phongShading from "./phongShading";
 import pointLight from "./pointLight";
 import texture from "./texture";
 import multiTexture from "./multiTexture";
+import alphaBlending from "./alphaBlending";
 
 export default {
   simplePolygon,
@@ -26,5 +27,6 @@ export default {
   phongShading,
   pointLight,
   texture,
-  multiTexture
+  multiTexture,
+  alphaBlending
 };
