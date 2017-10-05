@@ -41,7 +41,7 @@ export function createRangeInput(id, min, max, value, label) {
 // radio button
 export function createRadioButton(args) {
   const parentElem = document.createElement("p");
-  const inputElems = [];
+  const inputElems = {};
 
   _.forEach(args.data, info => {
     const inputElem = document.createElement("input");
@@ -54,7 +54,7 @@ export function createRadioButton(args) {
     inputElem.setAttribute("id", info.id);
     inputElem.setAttribute("name", name);
     inputElem.checked = !!info.checked;
-    inputElems.push(inputElem);
+    inputElems[info.id] = inputElem;
 
     inputSpan.appendChild(inputElem);
     textSpan.textContent = info.id;

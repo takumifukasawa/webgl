@@ -19046,20 +19046,27 @@ var _createTexture2 = _interopRequireDefault(_createTexture);
 
 var _createInputs = require("./../utils/createInputs");
 
+var _blnedType = require("./../utils/blnedType");
+
+var _blnedType2 = _interopRequireDefault(_blnedType);
+
 var _setAttribute = require("./../utils/setAttribute");
 
 var _setAttribute2 = _interopRequireDefault(_setAttribute);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var vertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nattribute vec2 textureCoord;\nuniform mat4 mvpMatrix;\nvarying vec4 v_color;\nvarying vec2 v_uv;\n\nvoid main(void) {\n  v_color = color;\n  v_uv = textureCoord;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
+var vertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nattribute vec2 textureCoord;\nuniform mat4 mvpMatrix;\nuniform float vertexAlpha;\nvarying vec4 vColor;\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  vColor = vec4(color.rgb, color.a * vertexAlpha);\n  vTextureCoord = textureCoord;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
 
-var fragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nvarying vec4 v_color;\nvarying vec2 v_uv;\nvoid main(void) {\n  vec4 smpColor = texture2D(texture, v_uv);\n  gl_FragColor = v_color * smpColor;\n}\n";
+var fragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nuniform int useTexture;\nvarying vec4 vColor;\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  vec4 destColor = vec4(0.);\n  if(bool(useTexture)) {\n    vec4 smpColor = texture2D(texture, vTextureCoord);\n    destColor = vColor * smpColor;\n  } else {\n    destColor = vColor;\n  }\n  gl_FragColor = destColor;\n}\n\n";
 
 function simplePolygon(canvas, gl) {
+  var radioButtons = void 0,
+      rangeInput = void 0;
+
   var positions = [-1.0, 1.0, 0.0, 1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, -1.0, 0.0];
 
-  var colors = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
+  var colors = [1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0];
 
   var textureCoords = [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0];
 
@@ -19098,7 +19105,9 @@ function simplePolygon(canvas, gl) {
 
   var uniLocation = {};
   uniLocation.mvpMatrix = gl.getUniformLocation(program, "mvpMatrix");
+  uniLocation.vertexAlpha = gl.getUniformLocation(program, "vertexAlpha");
   uniLocation.texture = gl.getUniformLocation(program, "texture");
+  uniLocation.useTexture = gl.getUniformLocation(program, "useTexture");
 
   var m = new matIV();
   var mMatrix = m.identity(m.create());
@@ -19113,6 +19122,7 @@ function simplePolygon(canvas, gl) {
   var texture = void 0;
   (0, _createTexture2.default)(gl, "./assets/images/texture.jpg").then(function (tex) {
     texture = tex;
+    gl.activeTexture(gl.TEXTURE0);
   });
 
   var setSize = function setSize(width, height) {
@@ -19124,22 +19134,67 @@ function simplePolygon(canvas, gl) {
   };
 
   var tick = function tick(time) {
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
     if (!texture) return;
+
+    if (radioButtons.inputElems.transparency.checked) {
+      (0, _blnedType2.default)(gl, 0);
+    }
+    if (radioButtons.inputElems.add.checked) {
+      (0, _blnedType2.default)(gl, 1);
+    }
+
+    var vertexAlpha = parseFloat(rangeInput.inputElem.value / 100);
+
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearDepth(1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     var rad = time / 20 % 360 * Math.PI / 180;
 
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.uniform1i(uniLocation.texture, 0);
+    // 1. tex
 
+    // transform
     m.identity(mMatrix);
+    m.translate(mMatrix, [0.25, 0.25, -0.25], mMatrix);
     m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
     m.multiply(tmpMatrix, mMatrix, mvpMatrix);
 
-    // update uniform
+    // bind texture
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    // blend
+    gl.disable(gl.BLEND);
+
+    // pass uniform
     gl.uniformMatrix4fv(uniLocation.mvpMatrix, false, mvpMatrix);
+    gl.uniform1f(uniLocation.vertexAlpha, 1.0);
+    gl.uniform1i(uniLocation.texture, 0);
+    gl.uniform1i(uniLocation.useTexture, true);
+
+    // draw elements
+    gl.drawElements(gl.TRIANGLES, indexes.length, gl.UNSIGNED_SHORT, 0);
+
+    // 2. rect
+
+    // transform
+    m.identity(mMatrix);
+    m.translate(mMatrix, [-0.25, -0.25, 0.25], mMatrix);
+    m.rotate(mMatrix, rad, [0, 0, 1], mMatrix);
+    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
+
+    // unbind texture
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    // blend
+    gl.enable(gl.BLEND);
+
+    // pass uniform
+    gl.uniformMatrix4fv(uniLocation.mvpMatrix, false, mvpMatrix);
+    gl.uniform1f(uniLocation.vertexAlpha, vertexAlpha);
+    gl.uniform1i(uniLocation.texture, 0);
+    gl.uniform1i(uniLocation.useTexture, false);
+
+    // draw elements
     gl.drawElements(gl.TRIANGLES, indexes.length, gl.UNSIGNED_SHORT, 0);
 
     gl.flush();
@@ -19147,12 +19202,12 @@ function simplePolygon(canvas, gl) {
 
   var addMenu = function addMenu(parentElem) {
     var frag = document.createDocumentFragment();
-    var radioButtons = (0, _createInputs.createRadioButton)({
+    radioButtons = (0, _createInputs.createRadioButton)({
       name: "blend",
       data: [{ id: "transparency", checked: true }, { id: "add" }]
     });
 
-    var rangeInput = (0, _createInputs.createRangeInput)("range", 0, 100, 70, "vertex alpha value (0% - 100%)");
+    rangeInput = (0, _createInputs.createRangeInput)("range", 0, 100, 70, "vertex alpha value (0% - 100%)");
 
     frag.appendChild(radioButtons.parentElem);
     frag.appendChild(rangeInput.parentElem);
@@ -19166,7 +19221,7 @@ function simplePolygon(canvas, gl) {
   };
 }
 
-},{"./../config/":84,"./../utils/createIBO":102,"./../utils/createInputs":103,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createTexture":107,"./../utils/createVBO":109,"./../utils/setAttribute":111,"lodash":80}],87:[function(require,module,exports){
+},{"./../config/":84,"./../utils/blnedType":102,"./../utils/createIBO":103,"./../utils/createInputs":104,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createTexture":108,"./../utils/createVBO":110,"./../utils/setAttribute":112,"lodash":80}],87:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19305,7 +19360,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":102,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createTorusGeometry":108,"./../utils/createVBO":109,"./../utils/setAttribute":111,"lodash":80}],88:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":103,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createTorusGeometry":109,"./../utils/createVBO":110,"./../utils/setAttribute":112,"lodash":80}],88:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19454,7 +19509,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":102,"./../utils/createInputs":103,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createVBO":109,"./../utils/setAttribute":111,"lodash":80}],89:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":103,"./../utils/createInputs":104,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createVBO":110,"./../utils/setAttribute":112,"lodash":80}],89:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19590,7 +19645,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":102,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createTorusGeometry":108,"./../utils/createVBO":109,"./../utils/setAttribute":111,"lodash":80}],90:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":103,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createTorusGeometry":109,"./../utils/createVBO":110,"./../utils/setAttribute":112,"lodash":80}],90:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19777,7 +19832,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":102,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createVBO":109,"./../utils/setAttribute":111,"lodash":80}],92:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":103,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createVBO":110,"./../utils/setAttribute":112,"lodash":80}],92:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19938,7 +19993,7 @@ function simplePolygon(canvas, gl) {
   };
 }
 
-},{"./../config/":84,"./../utils/createIBO":102,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createTexture":107,"./../utils/createVBO":109,"./../utils/setAttribute":111,"babel-runtime/core-js/promise":3,"babel-runtime/helpers/slicedToArray":4,"lodash":80}],93:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":103,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createTexture":108,"./../utils/createVBO":110,"./../utils/setAttribute":112,"babel-runtime/core-js/promise":3,"babel-runtime/helpers/slicedToArray":4,"lodash":80}],93:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20080,7 +20135,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":102,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createTorusGeometry":108,"./../utils/createVBO":109,"./../utils/setAttribute":111,"lodash":80}],94:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":103,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createTorusGeometry":109,"./../utils/createVBO":110,"./../utils/setAttribute":112,"lodash":80}],94:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20278,7 +20333,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":102,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createSphere":106,"./../utils/createTorusGeometry":108,"./../utils/createVBO":109,"./../utils/setAttribute":111,"lodash":80}],95:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":103,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createSphere":107,"./../utils/createTorusGeometry":109,"./../utils/createVBO":110,"./../utils/setAttribute":112,"lodash":80}],95:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20356,7 +20411,7 @@ function simplePolygon(canvas, gl) {
   };
 }
 
-},{"./../config/":84,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createVBO":109}],96:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createVBO":110}],96:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20474,7 +20529,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":102,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createTorusGeometry":108,"./../utils/createVBO":109,"./../utils/setAttribute":111,"lodash":80}],97:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":103,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createTorusGeometry":109,"./../utils/createVBO":110,"./../utils/setAttribute":112,"lodash":80}],97:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20616,7 +20671,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":102,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createTorusGeometry":108,"./../utils/createVBO":109,"./../utils/setAttribute":111,"lodash":80}],98:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":103,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createTorusGeometry":109,"./../utils/createVBO":110,"./../utils/setAttribute":112,"lodash":80}],98:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20755,7 +20810,7 @@ function simplePolygon(canvas, gl) {
   };
 }
 
-},{"./../config/":84,"./../utils/createIBO":102,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createTexture":107,"./../utils/createVBO":109,"./../utils/setAttribute":111,"lodash":80}],99:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":103,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createTexture":108,"./../utils/createVBO":110,"./../utils/setAttribute":112,"lodash":80}],99:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20858,7 +20913,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createVBO":109,"lodash":80}],100:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createVBO":110,"lodash":80}],100:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20953,7 +21008,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createProgram":104,"./../utils/createShader":105,"./../utils/createVBO":109,"lodash":80}],101:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createProgram":105,"./../utils/createShader":106,"./../utils/createVBO":110,"lodash":80}],101:[function(require,module,exports){
 "use strict";
 
 var _lodash = require("lodash");
@@ -21047,6 +21102,28 @@ main();
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.default = blendType;
+function blendType(gl, program) {
+  switch (program) {
+    // alpha
+    case 0:
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      break;
+    // add
+    case 1:
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+      break;
+    default:
+      break;
+  }
+}
+
+},{}],103:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 exports.default = createIBO;
 function createIBO(gl, array) {
   var ibo = gl.createBuffer();
@@ -21060,7 +21137,7 @@ function createIBO(gl, array) {
   return ibo;
 }
 
-},{}],103:[function(require,module,exports){
+},{}],104:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21116,7 +21193,7 @@ function createRangeInput(id, min, max, value, label) {
 // radio button
 function createRadioButton(args) {
   var parentElem = document.createElement("p");
-  var inputElems = [];
+  var inputElems = {};
 
   _lodash2.default.forEach(args.data, function (info) {
     var inputElem = document.createElement("input");
@@ -21129,7 +21206,7 @@ function createRadioButton(args) {
     inputElem.setAttribute("id", info.id);
     inputElem.setAttribute("name", name);
     inputElem.checked = !!info.checked;
-    inputElems.push(inputElem);
+    inputElems[info.id] = inputElem;
 
     inputSpan.appendChild(inputElem);
     textSpan.textContent = info.id;
@@ -21143,7 +21220,7 @@ function createRadioButton(args) {
   };
 }
 
-},{"lodash":80}],104:[function(require,module,exports){
+},{"lodash":80}],105:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21166,7 +21243,7 @@ function createProgram(gl, vs, fs) {
   }
 }
 
-},{}],105:[function(require,module,exports){
+},{}],106:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21205,7 +21282,7 @@ function createShader(gl, type, str) {
   }
 }
 
-},{"./../config/":84}],106:[function(require,module,exports){
+},{"./../config/":84}],107:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21248,7 +21325,7 @@ function sphere(row, column, rad, color) {
   return { positions: positions, normals: normals, indexes: indexes, colors: colors };
 }
 
-},{}],107:[function(require,module,exports){
+},{}],108:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21285,7 +21362,7 @@ exports.default = function (gl, src) {
   });
 };
 
-},{"babel-runtime/core-js/promise":3}],108:[function(require,module,exports){
+},{"babel-runtime/core-js/promise":3}],109:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21336,7 +21413,7 @@ function createTorusGeometry(row, column, irad, orad, color) {
   return { positions: positions, colors: colors, indexes: indexes, normals: normals };
 }
 
-},{"./../utils/hsva":110}],109:[function(require,module,exports){
+},{"./../utils/hsva":111}],110:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21355,7 +21432,7 @@ function creatVBO(gl, array) {
   return vbo;
 }
 
-},{}],110:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21387,7 +21464,7 @@ function hsva(h, s, v, a) {
   return color;
 }
 
-},{}],111:[function(require,module,exports){
+},{}],112:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
