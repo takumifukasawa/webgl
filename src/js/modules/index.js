@@ -15,6 +15,7 @@ import multiTexture from "./multiTexture";
 import alphaBlending from "./alphaBlending";
 import primitiveLinePoint from "./primitiveLinePoint";
 import pointSprite from "./pointSprite";
+import frameBuffer from "./frameBuffer";
 
 export default {
   simplePolygon,
@@ -32,5 +33,6 @@ export default {
   multiTexture,
   alphaBlending,
   primitiveLinePoint,
-  pointSprite
+  pointSprite,
+  frameBuffer
 };

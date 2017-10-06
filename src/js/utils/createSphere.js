@@ -3,6 +3,7 @@ export default function sphere(row, column, rad, color){
   const normals = new Array();
   const colors = new Array();
   const indexes = new Array();
+  const textureCoords = new Array();
 
   for(var i = 0; i <= row; i++){
   	const r = Math.PI / row * i;
@@ -21,6 +22,7 @@ export default function sphere(row, column, rad, color){
       positions.push(tx, ty, tz);
   		normals.push(rx, ry, rz);
       tc.forEach(val => colors.push(val));
+      textureCoords.push(1 - 1 / column * ii, 1 / row * i);
   	}
   }
   for(let i = 0; i < row; i++){
@@ -31,5 +33,5 @@ export default function sphere(row, column, rad, color){
   	}
   }
   
-  return { positions, normals, indexes, colors };
+  return { positions, normals, indexes, colors, textureCoords };
 }
