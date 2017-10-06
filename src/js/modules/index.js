@@ -13,6 +13,7 @@ import pointLight from "./pointLight";
 import texture from "./texture";
 import multiTexture from "./multiTexture";
 import alphaBlending from "./alphaBlending";
+import primitiveLinePoint from "./primitiveLinePoint";
 
 export default {
   simplePolygon,
@@ -28,5 +29,6 @@ export default {
   pointLight,
   texture,
   multiTexture,
-  alphaBlending
+  alphaBlending,
+  primitiveLinePoint
 };

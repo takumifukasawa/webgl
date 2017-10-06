@@ -5,6 +5,7 @@ import modules from "./modules/";
 
 let controller;
 let wrapper, canvas, gl;
+let width, height;
 
 function createMenu(list) {
   wrapper.style.display = "none";
@@ -21,9 +22,13 @@ function createMenu(list) {
   menu.appendChild(ul);
 }
 
+function onMouseMove(e) {
+  controller.mouseMove(e.clientX, e.clientY, width, height);
+}
+
 function onWindowResize() {
-  const width = wrapper.offsetWidth;
-  const height = wrapper.offsetHeight;
+  width = wrapper.offsetWidth;
+  height = wrapper.offsetHeight;
 
   canvas.width = width;
   canvas.height = height;
@@ -65,6 +70,9 @@ function main() {
 
   onWindowResize();
   window.addEventListener("resize", onWindowResize);
+  if(controller.mouseMove) {
+    canvas.addEventListener("mousemove", onMouseMove);
+  }
   requestAnimationFrame(tick);
 }
 
