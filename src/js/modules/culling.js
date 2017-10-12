@@ -6,7 +6,7 @@ import createIBO from "./../utils/createIBO";
 import createShader from "./../utils/createShader";
 import createProgram from "./../utils/createProgram";
 import setAttribute from "./../utils/setAttribute";
-import { createButton } from "./../utils/createInputs";
+import { createCheckButton } from "./../utils/createInputs";
 
 const vertexShaderText = `
 attribute vec3 position;
@@ -141,9 +141,9 @@ export default (canvas, gl) => {
 
   const addMenu = (parentElem) => {
     const frag = document.createDocumentFragment();
-    cullButton = createButton("cull", "checkbox", "enable culling")
-    frontButton = createButton("front", "checkbox", "frontface (check -> CCW)");
-    depthButton = createButton("depth", "checkbox", "enable depth test");
+    cullButton = createCheckButton("cull", "checkbox", "enable culling")
+    frontButton = createCheckButton("front", "checkbox", "frontface (check -> CCW)");
+    depthButton = createCheckButton("depth", "checkbox", "enable depth test");
     frag.appendChild(cullButton.parentElem);
     frag.appendChild(frontButton.parentElem);
     frag.appendChild(depthButton.parentElem);

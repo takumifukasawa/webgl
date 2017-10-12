@@ -1,8 +1,8 @@
 
 import _ from "lodash";
 
-// button
-export function createButton(id, type, label) {
+// check button
+export function createCheckButton(id, type, label) {
   const parentElem = document.createElement("p");
   const inputElem = document.createElement("input");
   const span = document.createElement("span");

@@ -16,6 +16,7 @@ import alphaBlending from "./alphaBlending";
 import primitiveLinePoint from "./primitiveLinePoint";
 import pointSprite from "./pointSprite";
 import frameBuffer from "./frameBuffer";
+import blurFilter from "./blurFilter";
 
 export default {
   simplePolygon,
@@ -34,5 +35,6 @@ export default {
   alphaBlending,
   primitiveLinePoint,
   pointSprite,
-  frameBuffer
+  frameBuffer,
+  blurFilter
 };

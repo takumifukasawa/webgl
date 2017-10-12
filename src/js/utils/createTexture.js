@@ -13,6 +13,12 @@ export default (gl, src) => {
       // create mipmap
       gl.generateMipmap(gl.TEXTURE_2D);
 
+      // set texture paramater
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+
       // invalidation binding texture
       gl.bindTexture(gl.TEXTURE_2D, null);
 
