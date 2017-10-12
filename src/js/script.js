@@ -27,11 +27,16 @@ function onMouseMove(e) {
 }
 
 function onWindowResize() {
-  width = wrapper.offsetWidth;
-  height = wrapper.offsetHeight;
+  //width = wrapper.offsetWidth;
+  //height = wrapper.offsetHeight;
+  width = 256;
+  height = 256;
 
   canvas.width = width;
   canvas.height = height;
+
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
 
   controller.setSize(width, height);
 }

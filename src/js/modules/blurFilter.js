@@ -100,8 +100,7 @@ void main(void) {
     destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;
     destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;
   }
-  //gl_FragColor = vColor * destColor;
-  gl_FragColor = vec4(1., 0., 0., 1.);
+  gl_FragColor = vColor * destColor;
 }
 `;
 
@@ -277,8 +276,8 @@ export default (canvas, gl) => {
     gl.activeTexture(gl.TEXTURE0);
   });
 
-  const frameBufferWidth = 512;
-  const frameBufferHeight = 512;
+  const frameBufferWidth = 256;
+  const frameBufferHeight = 256;
   const fBuffer = createFrameBuffer(gl, frameBufferWidth, frameBufferHeight);
 
   // マウスムーブイベントに登録する処理
@@ -402,7 +401,8 @@ export default (canvas, gl) => {
     gl.bindTexture(gl.TEXTURE_2D, fBuffer.frameBufferTexture);
 
 		m.lookAt([0.0, 0.0, 0.5], [0.0, 0.0, 0.0], [0, 1, 0], vMatrix);
-		m.ortho(-1.0, 1.0, 1.0, -1.0, 0.1, 1, pMatrix);
+    m.perspective(45, width / height, 0.1, 100, pMatrix);
+		//m.ortho(-1.0, 1.0, 1.0, -1.0, 0.1, 1, pMatrix);
 		m.multiply(pMatrix, vMatrix, tmpMatrix);
 		
 		m.identity(mMatrix);

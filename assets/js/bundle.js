@@ -19423,7 +19423,7 @@ var frameBufferFragmentShaderText = "\nprecision mediump float;\n\nuniform sampl
 
 var blurVertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nuniform mat4 mvpMatrix;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vColor = color;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
 
-var blurFragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nuniform bool useBlur;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vec2 tFrag = vec2(1. / 256.);\n  vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);\n \n  if(useBlur) {\n    destColor *= .36;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;\n  }\n  //gl_FragColor = vColor * destColor;\n  gl_FragColor = vec4(1., 0., 0., 1.);\n}\n";
+var blurFragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nuniform bool useBlur;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vec2 tFrag = vec2(1. / 256.);\n  vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);\n \n  if(useBlur) {\n    destColor *= .36;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;\n  }\n  gl_FragColor = vColor * destColor;\n}\n";
 
 exports.default = function (canvas, gl) {
   var blurButton = void 0;
@@ -19574,8 +19574,8 @@ exports.default = function (canvas, gl) {
     gl.activeTexture(gl.TEXTURE0);
   });
 
-  var frameBufferWidth = 512;
-  var frameBufferHeight = 512;
+  var frameBufferWidth = 256;
+  var frameBufferHeight = 256;
   var fBuffer = (0, _createFrameBuffer2.default)(gl, frameBufferWidth, frameBufferHeight);
 
   // マウスムーブイベントに登録する処理
@@ -19698,7 +19698,8 @@ exports.default = function (canvas, gl) {
     gl.bindTexture(gl.TEXTURE_2D, fBuffer.frameBufferTexture);
 
     m.lookAt([0.0, 0.0, 0.5], [0.0, 0.0, 0.0], [0, 1, 0], vMatrix);
-    m.ortho(-1.0, 1.0, 1.0, -1.0, 0.1, 1, pMatrix);
+    m.perspective(45, width / height, 0.1, 100, pMatrix);
+    //m.ortho(-1.0, 1.0, 1.0, -1.0, 0.1, 1, pMatrix);
     m.multiply(pMatrix, vMatrix, tmpMatrix);
 
     m.identity(mMatrix);
@@ -22272,11 +22273,16 @@ function onMouseMove(e) {
 }
 
 function onWindowResize() {
-  width = wrapper.offsetWidth;
-  height = wrapper.offsetHeight;
+  //width = wrapper.offsetWidth;
+  //height = wrapper.offsetHeight;
+  width = 256;
+  height = 256;
 
   canvas.width = width;
   canvas.height = height;
+
+  canvas.style.width = width + "px";
+  canvas.style.height = height + "px";
 
   controller.setSize(width, height);
 }
