@@ -20212,8 +20212,8 @@ exports.default = function (canvas, gl) {
     gl.activeTexture(gl.TEXTURE0);
   });
 
-  var frameBufferWidth = 512;
-  var frameBufferHeight = 512;
+  var frameBufferWidth = 256;
+  var frameBufferHeight = 256;
   var fBuffer = (0, _createFrameBuffer2.default)(gl, frameBufferWidth, frameBufferHeight);
 
   // マウスムーブイベントに登録する処理
