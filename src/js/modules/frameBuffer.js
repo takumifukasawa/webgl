@@ -54,7 +54,7 @@ void main(void) {
 }
 `;
 
-export default (canvas, gl) => {
+export default (canvas, gl, width, height) => {
   // limit point size
   const pointSizeRange = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
   console.log(`pointSizeRange: ${pointSizeRange[0]} to ${pointSizeRange[1]}`);
@@ -191,8 +191,8 @@ export default (canvas, gl) => {
     gl.activeTexture(gl.TEXTURE0);
   });
 
-  const frameBufferWidth = 512;
-  const frameBufferHeight = 512;
+  const frameBufferWidth = width;
+  const frameBufferHeight = height;
   const fBuffer = createFrameBuffer(gl, frameBufferWidth, frameBufferHeight);
 
   // マウスムーブイベントに登録する処理

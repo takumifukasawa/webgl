@@ -11,6 +11,8 @@ import { createCheckButton } from "./../utils/createInputs";
 import createTexture from "./../utils/createTexture";
 import createFrameBuffer from "./../utils/createFrameBuffer";
 
+let viewerSize = 0;
+
 const frameBufferVertexShaderText = `
 attribute vec3 position;
 attribute vec3 normal;
@@ -70,7 +72,7 @@ uniform bool useBlur;
 varying vec4 vColor;
 
 void main(void) {
-  vec2 tFrag = vec2(1. / 512.);
+  vec2 tFrag = vec2(1. / ${viewerSize});
   vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);
  
   if(useBlur) {
@@ -104,7 +106,9 @@ void main(void) {
 }
 `;
 
-export default (canvas, gl) => {
+export default (canvas, gl, width, height) => {
+  viewerSize = width;
+  
   let blurButton;
   let earthTexture, bgTexture;
   let lightDirection;
@@ -276,8 +280,8 @@ export default (canvas, gl) => {
     gl.activeTexture(gl.TEXTURE0);
   });
 
-  const frameBufferWidth = 512;
-  const frameBufferHeight = 512;
+  const frameBufferWidth = width;
+  const frameBufferHeight = height;
   const fBuffer = createFrameBuffer(gl, frameBufferWidth, frameBufferHeight);
 
   // マウスムーブイベントに登録する処理

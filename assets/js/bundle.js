@@ -19417,15 +19417,19 @@ var _createFrameBuffer2 = _interopRequireDefault(_createFrameBuffer);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var viewerSize = 0;
+
 var frameBufferVertexShaderText = "\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec4 color;\nattribute vec2 textureCoord;\nuniform mat4 mMatrix;\nuniform mat4 mvpMatrix;\nuniform mat4 invMatrix;\nuniform vec3 lightDirection;\nuniform bool useLight;\nvarying vec4 vColor;\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  if(useLight) {\n    vec3 invLight = normalize(invMatrix * vec4(lightDirection, 0.)).xyz;\n    float diffuse = clamp(dot(invLight, normal), .2, 1.);\n    vColor = vec4(color.xyz * diffuse, 1.);\n  } else {\n    vColor = color;\n  }\n  vTextureCoord = textureCoord;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
 
 var frameBufferFragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nvarying vec4 vColor;\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  vec4 smpColor = texture2D(texture, vTextureCoord);\n  gl_FragColor = vColor * smpColor;\n}\n";
 
 var blurVertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nuniform mat4 mvpMatrix;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vColor = color;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
 
-var blurFragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nuniform bool useBlur;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vec2 tFrag = vec2(1. / 512.);\n  vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);\n \n  if(useBlur) {\n    destColor *= .36;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;\n  }\n  gl_FragColor = vColor * destColor;\n}\n";
+var blurFragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nuniform bool useBlur;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vec2 tFrag = vec2(1. / " + viewerSize + ");\n  vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);\n \n  if(useBlur) {\n    destColor *= .36;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;\n  }\n  gl_FragColor = vColor * destColor;\n}\n";
 
-exports.default = function (canvas, gl) {
+exports.default = function (canvas, gl, width, height) {
+  viewerSize = width;
+
   var blurButton = void 0;
   var earthTexture = void 0,
       bgTexture = void 0;
@@ -19574,8 +19578,8 @@ exports.default = function (canvas, gl) {
     gl.activeTexture(gl.TEXTURE0);
   });
 
-  var frameBufferWidth = 512;
-  var frameBufferHeight = 512;
+  var frameBufferWidth = width;
+  var frameBufferHeight = height;
   var fBuffer = (0, _createFrameBuffer2.default)(gl, frameBufferWidth, frameBufferHeight);
 
   // マウスムーブイベントに登録する処理
@@ -20076,7 +20080,7 @@ var vertexShaderText = "\nattribute vec3 position;\nattribute vec3 normal;\nattr
 
 var fragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nvarying vec4 vColor;\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  vec4 smpColor = texture2D(texture, vTextureCoord);\n  gl_FragColor = smpColor * vColor;\n}\n";
 
-exports.default = function (canvas, gl) {
+exports.default = function (canvas, gl, width, height) {
   // limit point size
   var pointSizeRange = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE);
   console.log("pointSizeRange: " + pointSizeRange[0] + " to " + pointSizeRange[1]);
@@ -20212,8 +20216,8 @@ exports.default = function (canvas, gl) {
     gl.activeTexture(gl.TEXTURE0);
   });
 
-  var frameBufferWidth = 512;
-  var frameBufferHeight = 512;
+  var frameBufferWidth = width;
+  var frameBufferHeight = height;
   var fBuffer = (0, _createFrameBuffer2.default)(gl, frameBufferWidth, frameBufferHeight);
 
   // マウスムーブイベントに登録する処理
@@ -22637,7 +22641,9 @@ function onWindowResize() {
   canvas.style.width = width + "px";
   canvas.style.height = height + "px";
 
-  controller.setSize(width, height);
+  if (controller) {
+    controller.setSize(width, height);
+  }
 }
 
 function tick(time) {
@@ -22666,7 +22672,8 @@ function main() {
     return;
   }
 
-  controller = controllerFunc(canvas, gl);
+  onWindowResize();
+  controller = controllerFunc(canvas, gl, width, height);
 
   if (controller.addMenu) {
     var ui = document.querySelector(".ui");

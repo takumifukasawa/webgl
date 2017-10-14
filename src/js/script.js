@@ -38,7 +38,9 @@ function onWindowResize() {
   canvas.style.width = `${width}px`;
   canvas.style.height = `${height}px`;
 
-  controller.setSize(width, height);
+  if(controller) {
+    controller.setSize(width, height);
+  }
 }
 
 function tick(time) {
@@ -65,7 +67,8 @@ function main() {
     return;
   }
    
-  controller = controllerFunc(canvas, gl);
+  onWindowResize();
+  controller = controllerFunc(canvas, gl, width, height);
  
   if(controller.addMenu) {
     const ui = document.querySelector(".ui");
