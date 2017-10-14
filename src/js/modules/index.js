@@ -17,6 +17,7 @@ import primitiveLinePoint from "./primitiveLinePoint";
 import pointSprite from "./pointSprite";
 import frameBuffer from "./frameBuffer";
 import blurFilter from "./blurFilter";
+import grayscale from "./grayscale";
 
 export default {
   simplePolygon,
@@ -36,5 +37,6 @@ export default {
   primitiveLinePoint,
   pointSprite,
   frameBuffer,
-  blurFilter
+  blurFilter,
+  grayscale
 };

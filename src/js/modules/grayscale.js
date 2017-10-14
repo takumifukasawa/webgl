@@ -117,25 +117,6 @@ export default (canvas, gl) => {
   
   const frameBufferProgram = createProgram(gl, frameBufferVertexShader, frameBufferFragmentShader);
  
-  const frameBufferAttributesList = {
-    position: {
-      location: gl.getAttribLocation(frameBufferProgram, "position"),
-      stride: 3
-    }, 
-    color: {
-      location: gl.getAttribLocation(frameBufferProgram, "color"),
-      stride: 4
-    },
-    normal: {
-      location: gl.getAttribLocation(frameBufferProgram, "normal"),
-      stride: 3
-    },
-    textureCoord: {
-      location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
-      stride: 2
-    }
-  }
-
   // uniform
   const frameBufferUniformLocation = {};
   frameBufferUniformLocation.mMatrix = gl.getUniformLocation(frameBufferProgram, "mMatrix");
@@ -144,8 +125,6 @@ export default (canvas, gl) => {
   frameBufferUniformLocation.lightDirection = gl.getUniformLocation(frameBufferProgram, "lightDirection");
   frameBufferUniformLocation.useLight = gl.getUniformLocation(frameBufferProgram, "useLight");
   frameBufferUniformLocation.texture = gl.getUniformLocation(frameBufferProgram, "texture");
-
-
 
   // create shpere
   const sphere = createSphere(64, 64, 1.0, [1.0, 1.0, 1.0, 1.0]);

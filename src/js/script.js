@@ -29,8 +29,8 @@ function onMouseMove(e) {
 function onWindowResize() {
   //width = wrapper.offsetWidth;
   //height = wrapper.offsetHeight;
-  width = 256;
-  height = 256;
+  width = 512;
+  height = 512;
 
   canvas.width = width;
   canvas.height = height;

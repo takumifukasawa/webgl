@@ -19221,7 +19221,7 @@ function simplePolygon(canvas, gl) {
   };
 }
 
-},{"./../config/":84,"./../utils/blnedType":106,"./../utils/createIBO":109,"./../utils/createInputs":110,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createTexture":114,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],87:[function(require,module,exports){
+},{"./../config/":84,"./../utils/blnedType":107,"./../utils/createIBO":110,"./../utils/createInputs":111,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createTexture":115,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],87:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19360,7 +19360,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createTorusGeometry":115,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],88:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createTorusGeometry":116,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],88:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19423,7 +19423,7 @@ var frameBufferFragmentShaderText = "\nprecision mediump float;\n\nuniform sampl
 
 var blurVertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nuniform mat4 mvpMatrix;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vColor = color;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
 
-var blurFragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nuniform bool useBlur;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vec2 tFrag = vec2(1. / 256.);\n  vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);\n \n  if(useBlur) {\n    destColor *= .36;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;\n  }\n  gl_FragColor = vColor * destColor;\n}\n";
+var blurFragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nuniform bool useBlur;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vec2 tFrag = vec2(1. / 512.);\n  vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);\n \n  if(useBlur) {\n    destColor *= .36;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;\n  }\n  gl_FragColor = vColor * destColor;\n}\n";
 
 exports.default = function (canvas, gl) {
   var blurButton = void 0;
@@ -19574,8 +19574,8 @@ exports.default = function (canvas, gl) {
     gl.activeTexture(gl.TEXTURE0);
   });
 
-  var frameBufferWidth = 256;
-  var frameBufferHeight = 256;
+  var frameBufferWidth = 512;
+  var frameBufferHeight = 512;
   var fBuffer = (0, _createFrameBuffer2.default)(gl, frameBufferWidth, frameBufferHeight);
 
   // マウスムーブイベントに登録する処理
@@ -19726,7 +19726,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createFrameBuffer":108,"./../utils/createIBO":109,"./../utils/createInputs":110,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createSphere":113,"./../utils/createTexture":114,"./../utils/createVBO":116,"./../utils/setAttribute":118,"babel-runtime/core-js/promise":3,"babel-runtime/helpers/slicedToArray":4,"lodash":80}],89:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createFrameBuffer":109,"./../utils/createIBO":110,"./../utils/createInputs":111,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createSphere":114,"./../utils/createTexture":115,"./../utils/createVBO":117,"./../utils/setAttribute":119,"babel-runtime/core-js/promise":3,"babel-runtime/helpers/slicedToArray":4,"lodash":80}],89:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19875,7 +19875,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createInputs":110,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],90:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createInputs":111,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],90:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20011,7 +20011,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createTorusGeometry":115,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],91:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createTorusGeometry":116,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],91:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20212,8 +20212,8 @@ exports.default = function (canvas, gl) {
     gl.activeTexture(gl.TEXTURE0);
   });
 
-  var frameBufferWidth = 256;
-  var frameBufferHeight = 256;
+  var frameBufferWidth = 512;
+  var frameBufferHeight = 512;
   var fBuffer = (0, _createFrameBuffer2.default)(gl, frameBufferWidth, frameBufferHeight);
 
   // マウスムーブイベントに登録する処理
@@ -20356,7 +20356,355 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createCube":107,"./../utils/createFrameBuffer":108,"./../utils/createIBO":109,"./../utils/createInputs":110,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createSphere":113,"./../utils/createTexture":114,"./../utils/createVBO":116,"./../utils/setAttribute":118,"babel-runtime/core-js/promise":3,"babel-runtime/helpers/slicedToArray":4,"lodash":80}],92:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createCube":108,"./../utils/createFrameBuffer":109,"./../utils/createIBO":110,"./../utils/createInputs":111,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createSphere":114,"./../utils/createTexture":115,"./../utils/createVBO":117,"./../utils/setAttribute":119,"babel-runtime/core-js/promise":3,"babel-runtime/helpers/slicedToArray":4,"lodash":80}],92:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray2 = require("babel-runtime/helpers/slicedToArray");
+
+var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
+
+var _promise = require("babel-runtime/core-js/promise");
+
+var _promise2 = _interopRequireDefault(_promise);
+
+var _lodash = require("lodash");
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _config = require("./../config/");
+
+var _createVBO = require("./../utils/createVBO");
+
+var _createVBO2 = _interopRequireDefault(_createVBO);
+
+var _createIBO = require("./../utils/createIBO");
+
+var _createIBO2 = _interopRequireDefault(_createIBO);
+
+var _createShader = require("./../utils/createShader");
+
+var _createShader2 = _interopRequireDefault(_createShader);
+
+var _createProgram = require("./../utils/createProgram");
+
+var _createProgram2 = _interopRequireDefault(_createProgram);
+
+var _setAttribute = require("./../utils/setAttribute");
+
+var _setAttribute2 = _interopRequireDefault(_setAttribute);
+
+var _createSphere = require("./../utils/createSphere");
+
+var _createSphere2 = _interopRequireDefault(_createSphere);
+
+var _createInputs = require("./../utils/createInputs");
+
+var _createTexture = require("./../utils/createTexture");
+
+var _createTexture2 = _interopRequireDefault(_createTexture);
+
+var _createFrameBuffer = require("./../utils/createFrameBuffer");
+
+var _createFrameBuffer2 = _interopRequireDefault(_createFrameBuffer);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var frameBufferVertexShaderText = "\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec4 color;\nattribute vec2 textureCoord;\nuniform mat4 mMatrix;\nuniform mat4 mvpMatrix;\nuniform mat4 invMatrix;\nuniform vec3 lightDirection;\nuniform bool useLight;\nvarying vec4 vColor;\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  if(useLight) {\n    vec3 invLight = normalize(invMatrix * vec4(lightDirection, 0.)).xyz;\n    float diffuse = clamp(dot(invLight, normal), .2, 1.);\n    vColor = vec4(color.xyz * diffuse, 1.);\n  } else {\n    vColor = color;\n  }\n  vTextureCoord = textureCoord;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
+
+var frameBufferFragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nvarying vec4 vColor;\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  vec4 smpColor = texture2D(texture, vTextureCoord);\n  gl_FragColor = vColor * smpColor;\n}\n";
+
+var blurVertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nuniform mat4 mvpMatrix;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vColor = color;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
+
+var blurFragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nuniform bool useBlur;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vec2 tFrag = vec2(1. / 512.);\n  vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);\n \n  if(useBlur) {\n    destColor *= .36;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;\n  }\n  gl_FragColor = vColor * destColor;\n}\n";
+
+exports.default = function (canvas, gl) {
+  var blurButton = void 0;
+  var earthTexture = void 0,
+      bgTexture = void 0;
+  var lightDirection = void 0;
+
+  var q = new qtnIV();
+  var qt = q.identity(q.create());
+
+  var frameBufferVertexShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.VERTEX_SHADER, frameBufferVertexShaderText);
+  var frameBufferFragmentShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.FRAGMENT_SHADER, frameBufferFragmentShaderText);
+
+  var frameBufferProgram = (0, _createProgram2.default)(gl, frameBufferVertexShader, frameBufferFragmentShader);
+
+  // uniform
+  var frameBufferUniformLocation = {};
+  frameBufferUniformLocation.mMatrix = gl.getUniformLocation(frameBufferProgram, "mMatrix");
+  frameBufferUniformLocation.mvpMatrix = gl.getUniformLocation(frameBufferProgram, "mvpMatrix");
+  frameBufferUniformLocation.invMatrix = gl.getUniformLocation(frameBufferProgram, "invMatrix");
+  frameBufferUniformLocation.lightDirection = gl.getUniformLocation(frameBufferProgram, "lightDirection");
+  frameBufferUniformLocation.useLight = gl.getUniformLocation(frameBufferProgram, "useLight");
+  frameBufferUniformLocation.texture = gl.getUniformLocation(frameBufferProgram, "texture");
+
+  // create shpere
+  var sphere = (0, _createSphere2.default)(64, 64, 1.0, [1.0, 1.0, 1.0, 1.0]);
+  var sphereAttributesList = {
+    position: {
+      location: gl.getAttribLocation(frameBufferProgram, "position"),
+      stride: 3
+    },
+    color: {
+      location: gl.getAttribLocation(frameBufferProgram, "color"),
+      stride: 4
+    },
+    normal: {
+      location: gl.getAttribLocation(frameBufferProgram, "normal"),
+      stride: 3
+    },
+    textureCoord: {
+      location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
+      stride: 2
+    }
+  };
+  var sphereAttributes = [{
+    label: "position",
+    data: sphere.positions
+  }, {
+    label: "color",
+    data: sphere.colors
+  }, {
+    label: "normal",
+    data: sphere.normals
+  }, {
+    label: "textureCoord",
+    data: sphere.textureCoords
+  }];
+  var sphereVBOList = {};
+  _lodash2.default.forEach(sphereAttributes, function (attribute) {
+    sphereVBOList[attribute.label] = (0, _createVBO2.default)(gl, attribute.data);
+  });
+  var sphereIBO = (0, _createIBO2.default)(gl, sphere.indexes);
+
+  // blur
+
+  var blurVertexShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.VERTEX_SHADER, blurVertexShaderText);
+  var blurFragmentShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.FRAGMENT_SHADER, blurFragmentShaderText);
+
+  var blurProgram = (0, _createProgram2.default)(gl, blurVertexShader, blurFragmentShader);
+
+  var blur = {
+    positions: [-1.0, 1.0, 0.0, 1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, -1.0, 0.0],
+    colors: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+    indexes: [0, 1, 2, 3, 2, 1]
+  };
+
+  var blurAttributesList = {
+    position: {
+      location: gl.getAttribLocation(blurProgram, "position"),
+      stride: 3
+    },
+    color: {
+      location: gl.getAttribLocation(blurProgram, "color"),
+      stride: 4
+    }
+  };
+  var blurAttributes = [{
+    label: "position",
+    data: blur.positions
+  }, {
+    label: "color",
+    data: blur.colors
+  }];
+  var blurVBOList = {};
+  _lodash2.default.forEach(blurAttributes, function (attribute) {
+    blurVBOList[attribute.label] = (0, _createVBO2.default)(gl, attribute.data);
+  });
+  var blurIBO = (0, _createIBO2.default)(gl, blur.indexes);
+
+  var blurUniformLocation = {};
+  blurUniformLocation.mvpMatrix = gl.getUniformLocation(blurProgram, "mvpMatrix");
+  blurUniformLocation.texture = gl.getUniformLocation(blurProgram, "texture");
+  blurUniformLocation.useBlur = gl.getUniformLocation(blurProgram, "useBlur");
+
+  // init matrix
+  var m = new matIV();
+  var mMatrix = m.identity(m.create());
+  var vMatrix = m.identity(m.create());
+  var pMatrix = m.identity(m.create());
+  var tmpMatrix = m.identity(m.create());
+  var mvpMatrix = m.identity(m.create());
+  var invMatrix = m.identity(m.create());
+
+  // gl setting
+  gl.enable(gl.DEPTH_TEST);
+  gl.depthFunc(gl.LEQUAL);
+  gl.enable(gl.BLEND);
+
+  // set blend paramater
+  //gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
+
+  // load texture
+  _promise2.default.all([(0, _createTexture2.default)(gl, "./assets/images/earth.png"), (0, _createTexture2.default)(gl, "./assets/images/bg.jpg")]).then(function (_ref) {
+    var _ref2 = (0, _slicedToArray3.default)(_ref, 2),
+        earthT = _ref2[0],
+        bgT = _ref2[1];
+
+    earthTexture = earthT;
+    bgTexture = bgT;
+    gl.activeTexture(gl.TEXTURE0);
+  });
+
+  var frameBufferWidth = 512;
+  var frameBufferHeight = 512;
+  var fBuffer = (0, _createFrameBuffer2.default)(gl, frameBufferWidth, frameBufferHeight);
+
+  // マウスムーブイベントに登録する処理
+  var mouseMove = function mouseMove(clientX, clientY, width, height) {
+    var cw = width;
+    var ch = height;
+    var wh = 1 / Math.sqrt(cw * cw + ch * ch);
+    var x = clientX - canvas.offsetLeft - cw * 0.5;
+    var y = clientY - canvas.offsetTop - ch * 0.5;
+    var sq = Math.sqrt(x * x + y * y);
+    var r = sq * 2.0 * Math.PI * wh;
+    if (sq != 1) {
+      sq = 1 / sq;
+      x *= sq;
+      y *= sq;
+    }
+    q.rotate(r, [y, x, 0.0], qt);
+
+    updateProjection(width, height);
+  };
+
+  // update projection
+  var updateProjection = function updateProjection(width, height) {
+    var qMatrix = m.identity(m.create());
+    q.toMatIV(qt, qMatrix);
+
+    var cameraPosition = [0.0, 5.0, 10.0];
+    m.lookAt(cameraPosition, [0, 0, 0], [0, 1, 0], vMatrix);
+    m.multiply(vMatrix, qMatrix, vMatrix);
+    m.perspective(45, width / height, 0.1, 100, pMatrix);
+    m.multiply(pMatrix, vMatrix, tmpMatrix);
+  };
+
+  // set size
+  var setSize = function setSize(width, height) {
+    updateProjection(width, height);
+    gl.viewport(0, 0, width, height);
+  };
+
+  // loop
+  var tick = function tick(time, width, height) {
+    if (!earthTexture || !bgTexture) return;
+
+    var rad = time / 40 % 360 * Math.PI / 180;
+
+    // bind frame buffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fBuffer.frameBuffer);
+
+    // clear frame buffer
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearDepth(1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // 1. draw earth
+
+    gl.useProgram(frameBufferProgram);
+
+    m.lookAt([0.0, 0.0, 5.0], [0, 0, 0], [0, 1, 0], vMatrix);
+    m.perspective(45, frameBufferWidth, frameBufferHeight, 0.1, 100, pMatrix);
+    m.multiply(pMatrix, vMatrix, tmpMatrix);
+
+    _lodash2.default.forEach(sphereVBOList, function (vbo, label) {
+      var attributeData = sphereAttributesList[label];
+      (0, _setAttribute2.default)(gl, vbo, attributeData.location, attributeData.stride);
+    });
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereIBO);
+
+    lightDirection = [-1.0, 2.0, 1.0];
+
+    m.lookAt([0.0, 0.0, 5.0], [0, 0, 0], [0, 1, 0], vMatrix);
+    m.perspective(45, frameBufferWidth / frameBufferHeight, 0.1, 100, pMatrix);
+    m.multiply(pMatrix, vMatrix, tmpMatrix);
+
+    gl.bindTexture(gl.TEXTURE_2D, bgTexture);
+    m.identity(mMatrix);
+    m.scale(mMatrix, [50.0, 50.0, 50.0], mMatrix);
+    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
+    m.inverse(mMatrix, invMatrix);
+    gl.uniformMatrix4fv(frameBufferUniformLocation.mMatrix, false, mMatrix);
+    gl.uniformMatrix4fv(frameBufferUniformLocation.mvpMatrix, false, mvpMatrix);
+    gl.uniformMatrix4fv(frameBufferUniformLocation.invMatrix, false, invMatrix);
+    gl.uniform3fv(frameBufferUniformLocation.lightDirection, lightDirection);
+    gl.uniform1i(frameBufferUniformLocation.useLight, false);
+    gl.uniform1i(frameBufferUniformLocation.texture, 0);
+    gl.drawElements(gl.TRIANGLES, sphere.indexes.length, gl.UNSIGNED_SHORT, 0);
+
+    // 2. earth
+
+    gl.bindTexture(gl.TEXTURE_2D, earthTexture);
+    m.identity(mMatrix);
+    m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
+    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
+    m.inverse(mMatrix, invMatrix);
+    gl.uniformMatrix4fv(frameBufferUniformLocation.mMatrix, false, mMatrix);
+    gl.uniformMatrix4fv(frameBufferUniformLocation.mvpMatrix, false, mvpMatrix);
+    gl.uniformMatrix4fv(frameBufferUniformLocation.invMatrix, false, invMatrix);
+    gl.uniform1i(frameBufferUniformLocation.useLight, true);
+    gl.drawElements(gl.TRIANGLES, sphere.indexes.length, gl.UNSIGNED_SHORT, 0);
+
+    // 3. blur
+
+    // unbind frameBuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    // clear canvas
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clearDepth(1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    gl.useProgram(blurProgram);
+
+    var useBlur = !!blurButton.inputElem.checked;
+
+    _lodash2.default.forEach(blurVBOList, function (vbo, label) {
+      var attributeData = blurAttributesList[label];
+      (0, _setAttribute2.default)(gl, vbo, attributeData.location, attributeData.stride);
+    });
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, blurIBO);
+
+    gl.bindTexture(gl.TEXTURE_2D, fBuffer.frameBufferTexture);
+
+    m.lookAt([0.0, 0.0, 0.5], [0.0, 0.0, 0.0], [0, 1, 0], vMatrix);
+    m.perspective(45, width / height, 0.1, 100, pMatrix);
+    //m.ortho(-1.0, 1.0, 1.0, -1.0, 0.1, 1, pMatrix);
+    m.multiply(pMatrix, vMatrix, tmpMatrix);
+
+    m.identity(mMatrix);
+    m.multiply(tmpMatrix, vMatrix, mvpMatrix);
+    gl.uniformMatrix4fv(blurUniformLocation.mvpMatrix, false, mvpMatrix);
+    gl.uniform1i(blurUniformLocation.texture, 0);
+    gl.uniform1i(blurUniformLocation.useBlur, useBlur);
+    gl.drawElements(gl.TRIANGLES, blur.indexes.length, gl.UNSIGNED_SHORT, 0);
+
+    gl.flush();
+  };
+
+  var addMenu = function addMenu(parentElem) {
+    var frag = document.createDocumentFragment();
+    blurButton = (0, _createInputs.createCheckButton)("blur", "checkbox", "use blur");
+    frag.appendChild(blurButton.parentElem);
+    parentElem.appendChild(frag);
+  };
+
+  return {
+    setSize: setSize,
+    tick: tick,
+    addMenu: addMenu
+  };
+};
+
+},{"./../config/":84,"./../utils/createFrameBuffer":109,"./../utils/createIBO":110,"./../utils/createInputs":111,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createSphere":114,"./../utils/createTexture":115,"./../utils/createVBO":117,"./../utils/setAttribute":119,"babel-runtime/core-js/promise":3,"babel-runtime/helpers/slicedToArray":4,"lodash":80}],93:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20435,6 +20783,10 @@ var _blurFilter = require("./blurFilter");
 
 var _blurFilter2 = _interopRequireDefault(_blurFilter);
 
+var _grayscale = require("./grayscale");
+
+var _grayscale2 = _interopRequireDefault(_grayscale);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = {
@@ -20455,10 +20807,11 @@ exports.default = {
   primitiveLinePoint: _primitiveLinePoint2.default,
   pointSprite: _pointSprite2.default,
   frameBuffer: _frameBuffer2.default,
-  blurFilter: _blurFilter2.default
+  blurFilter: _blurFilter2.default,
+  grayscale: _grayscale2.default
 };
 
-},{"./alphaBlending":86,"./ambientLight":87,"./blurFilter":88,"./culling":89,"./directionalLight":90,"./frameBuffer":91,"./indexBuffer":93,"./multiTexture":94,"./phongShading":95,"./pointLight":96,"./pointSprite":97,"./primitiveLinePoint":98,"./simplePolygon":99,"./simpleTorus":100,"./specular":101,"./texture":102,"./translateTriangle":103,"./vertexColor":104}],93:[function(require,module,exports){
+},{"./alphaBlending":86,"./ambientLight":87,"./blurFilter":88,"./culling":89,"./directionalLight":90,"./frameBuffer":91,"./grayscale":92,"./indexBuffer":94,"./multiTexture":95,"./phongShading":96,"./pointLight":97,"./pointSprite":98,"./primitiveLinePoint":99,"./simplePolygon":100,"./simpleTorus":101,"./specular":102,"./texture":103,"./translateTriangle":104,"./vertexColor":105}],94:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20563,7 +20916,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],94:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],95:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20724,7 +21077,7 @@ function simplePolygon(canvas, gl) {
   };
 }
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createTexture":114,"./../utils/createVBO":116,"./../utils/setAttribute":118,"babel-runtime/core-js/promise":3,"babel-runtime/helpers/slicedToArray":4,"lodash":80}],95:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createTexture":115,"./../utils/createVBO":117,"./../utils/setAttribute":119,"babel-runtime/core-js/promise":3,"babel-runtime/helpers/slicedToArray":4,"lodash":80}],96:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -20866,7 +21219,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createTorusGeometry":115,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],96:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createTorusGeometry":116,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],97:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21064,7 +21417,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createSphere":113,"./../utils/createTorusGeometry":115,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],97:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createSphere":114,"./../utils/createTorusGeometry":116,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],98:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21322,7 +21675,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createInputs":110,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createSphere":113,"./../utils/createTexture":114,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],98:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createInputs":111,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createSphere":114,"./../utils/createTexture":115,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],99:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21554,7 +21907,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createInputs":110,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createSphere":113,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],99:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createInputs":111,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createSphere":114,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],100:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21632,7 +21985,7 @@ function simplePolygon(canvas, gl) {
   };
 }
 
-},{"./../config/":84,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createVBO":116}],100:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createVBO":117}],101:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21750,7 +22103,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createTorusGeometry":115,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],101:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createTorusGeometry":116,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],102:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -21892,7 +22245,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createTorusGeometry":115,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],102:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createTorusGeometry":116,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],103:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22031,7 +22384,7 @@ function simplePolygon(canvas, gl) {
   };
 }
 
-},{"./../config/":84,"./../utils/createIBO":109,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createTexture":114,"./../utils/createVBO":116,"./../utils/setAttribute":118,"lodash":80}],103:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createIBO":110,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createTexture":115,"./../utils/createVBO":117,"./../utils/setAttribute":119,"lodash":80}],104:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22134,7 +22487,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createVBO":116,"lodash":80}],104:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createVBO":117,"lodash":80}],105:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22229,7 +22582,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createProgram":111,"./../utils/createShader":112,"./../utils/createVBO":116,"lodash":80}],105:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createVBO":117,"lodash":80}],106:[function(require,module,exports){
 "use strict";
 
 var _lodash = require("lodash");
@@ -22275,8 +22628,8 @@ function onMouseMove(e) {
 function onWindowResize() {
   //width = wrapper.offsetWidth;
   //height = wrapper.offsetHeight;
-  width = 256;
-  height = 256;
+  width = 512;
+  height = 512;
 
   canvas.width = width;
   canvas.height = height;
@@ -22331,7 +22684,7 @@ function main() {
 
 main();
 
-},{"./modules/":92,"lodash":80,"query-string":82}],106:[function(require,module,exports){
+},{"./modules/":93,"lodash":80,"query-string":82}],107:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22353,7 +22706,7 @@ function blendType(gl, program) {
   }
 }
 
-},{}],107:[function(require,module,exports){
+},{}],108:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22388,7 +22741,7 @@ function createCube(side, color) {
 	return { positions: positions, normals: normals, textureCoords: textureCoords, indexes: indexes, colors: colors };
 }
 
-},{"lodash":80}],108:[function(require,module,exports){
+},{"lodash":80}],109:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22440,7 +22793,7 @@ function createFrameBuffer(gl, width, height) {
   };
 }
 
-},{}],109:[function(require,module,exports){
+},{}],110:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22459,7 +22812,7 @@ function createIBO(gl, array) {
   return ibo;
 }
 
-},{}],110:[function(require,module,exports){
+},{}],111:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22542,7 +22895,7 @@ function createRadioButton(args) {
   };
 }
 
-},{"lodash":80}],111:[function(require,module,exports){
+},{"lodash":80}],112:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22565,7 +22918,7 @@ function createProgram(gl, vs, fs) {
   }
 }
 
-},{}],112:[function(require,module,exports){
+},{}],113:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22604,7 +22957,7 @@ function createShader(gl, type, str) {
   }
 }
 
-},{"./../config/":84}],113:[function(require,module,exports){
+},{"./../config/":84}],114:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22649,7 +23002,7 @@ function sphere(row, column, rad, color) {
   return { positions: positions, normals: normals, indexes: indexes, colors: colors, textureCoords: textureCoords };
 }
 
-},{}],114:[function(require,module,exports){
+},{}],115:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22692,7 +23045,7 @@ exports.default = function (gl, src) {
   });
 };
 
-},{"babel-runtime/core-js/promise":3}],115:[function(require,module,exports){
+},{"babel-runtime/core-js/promise":3}],116:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22743,7 +23096,7 @@ function createTorusGeometry(row, column, irad, orad, color) {
   return { positions: positions, colors: colors, indexes: indexes, normals: normals };
 }
 
-},{"./../utils/hsva":117}],116:[function(require,module,exports){
+},{"./../utils/hsva":118}],117:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22762,7 +23115,7 @@ function creatVBO(gl, array) {
   return vbo;
 }
 
-},{}],117:[function(require,module,exports){
+},{}],118:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22794,7 +23147,7 @@ function hsva(h, s, v, a) {
   return color;
 }
 
-},{}],118:[function(require,module,exports){
+},{}],119:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22809,4 +23162,4 @@ function setAttribute(gl, vbo, attLocation, stride) {
   gl.vertexAttribPointer(attLocation, stride, format, false, 0, 0);
 }
 
-},{}]},{},[105]);
+},{}]},{},[106]);
