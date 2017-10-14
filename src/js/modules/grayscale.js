@@ -7,9 +7,12 @@ import createShader from "./../utils/createShader";
 import createProgram from "./../utils/createProgram";
 import setAttribute from "./../utils/setAttribute";
 import createSphere from "./../utils/createSphere";
+import createTorus from "./../utils/createTorus";
 import { createCheckButton } from "./../utils/createInputs";
 import createTexture from "./../utils/createTexture";
 import createFrameBuffer from "./../utils/createFrameBuffer";
+
+let viewerSize = 0;
 
 const frameBufferVertexShaderText = `
 attribute vec3 position;
@@ -70,7 +73,7 @@ uniform bool useBlur;
 varying vec4 vColor;
 
 void main(void) {
-  vec2 tFrag = vec2(1. / 512.);
+  vec2 tFrag = vec2(1. / ${viewerSize});
   vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);
  
   if(useBlur) {
@@ -104,7 +107,9 @@ void main(void) {
 }
 `;
 
-export default (canvas, gl) => {
+export default (canvas, gl, width, height) => {
+  viewerSize = width;
+  
   let blurButton;
   let earthTexture, bgTexture;
   let lightDirection;
@@ -126,46 +131,35 @@ export default (canvas, gl) => {
   frameBufferUniformLocation.useLight = gl.getUniformLocation(frameBufferProgram, "useLight");
   frameBufferUniformLocation.texture = gl.getUniformLocation(frameBufferProgram, "texture");
 
-  // create shpere
-  const sphere = createSphere(64, 64, 1.0, [1.0, 1.0, 1.0, 1.0]);
-  const sphereAttributesList = {
-    position: {
+  // create torus
+  const torus = createTorus(64, 64, 1.0, 2.0, [1.0, 1.0, 1.0, 1.0]);
+  const torusAttributes = [
+    {
+      label: "position",
+      data: torus.positions,
       location: gl.getAttribLocation(frameBufferProgram, "position"),
       stride: 3
-    },
-    color: {
+    }, {
+      label: "color",
+      data: torus.colors,
       location: gl.getAttribLocation(frameBufferProgram, "color"),
       stride: 4
-    },
-    normal: {
+    }, {
+      label: "normal",
+      data: torus.normals,
       location: gl.getAttribLocation(frameBufferProgram, "normal"),
       stride: 3
-    },
-    textureCoord: {
+    }, {
+      label: "textureCoord",
+      data: torus.textureCoords,
       location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
       stride: 2
     }
-  };
-	const sphereAttributes = [
-    {
-      label: "position",
-      data: sphere.positions,
-    }, {
-      label: "color",
-      data: sphere.colors,
-    }, {
-      label: "normal",
-      data: sphere.normals
-    }, {
-      label: "textureCoord",
-      data: sphere.textureCoords
-    }
   ];
-  const sphereVBOList = {};
-  _.forEach(sphereAttributes, attribute => {
-    sphereVBOList[attribute.label] = createVBO(gl, attribute.data);
+  const torusVBOList = {};
+  _.forEach(torusAttributes, attribute => {
+    torusVBOList[attribute.label] = createVBO(gl, attribute.data);
   });
-  const sphereIBO = createIBO(gl, sphere.indexes);
 
 
   // blur
@@ -255,8 +249,8 @@ export default (canvas, gl) => {
     gl.activeTexture(gl.TEXTURE0);
   });
 
-  const frameBufferWidth = 512;
-  const frameBufferHeight = 512;
+  const frameBufferWidth = width;
+  const frameBufferHeight = height;
   const fBuffer = createFrameBuffer(gl, frameBufferWidth, frameBufferHeight);
 
   // マウスムーブイベントに登録する処理
@@ -318,11 +312,11 @@ export default (canvas, gl) => {
     m.perspective(45, frameBufferWidth, frameBufferHeight, 0.1, 100, pMatrix);
     m.multiply(pMatrix, vMatrix, tmpMatrix);
 
-    _.forEach(sphereVBOList, (vbo, label) => {
-      const attributeData = sphereAttributesList[label];
+    _.forEach(torusVBOList, (vbo, label) => {
+      const attributeData = torusAttributes[label];
       setAttribute(gl, vbo, attributeData.location, attributeData.stride);
     });
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereIBO);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, torusIBO);
 
     lightDirection = [-1.0, 2.0, 1.0];
 
@@ -341,7 +335,7 @@ export default (canvas, gl) => {
     gl.uniform3fv(frameBufferUniformLocation.lightDirection, lightDirection);
     gl.uniform1i(frameBufferUniformLocation.useLight, false);
     gl.uniform1i(frameBufferUniformLocation.texture, 0);
-    gl.drawElements(gl.TRIANGLES, sphere.indexes.length, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, torus.indexes.length, gl.UNSIGNED_SHORT, 0);
 
     // 2. earth
 
@@ -354,7 +348,7 @@ export default (canvas, gl) => {
     gl.uniformMatrix4fv(frameBufferUniformLocation.mvpMatrix, false, mvpMatrix);
     gl.uniformMatrix4fv(frameBufferUniformLocation.invMatrix, false, invMatrix);
     gl.uniform1i(frameBufferUniformLocation.useLight, true);
-    gl.drawElements(gl.TRIANGLES, sphere.indexes.length, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, torus.indexes.length, gl.UNSIGNED_SHORT, 0);
    
   
     // 3. blur
