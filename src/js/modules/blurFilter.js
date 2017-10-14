@@ -121,25 +121,6 @@ export default (canvas, gl, width, height) => {
   
   const frameBufferProgram = createProgram(gl, frameBufferVertexShader, frameBufferFragmentShader);
  
-  const frameBufferAttributesList = {
-    position: {
-      location: gl.getAttribLocation(frameBufferProgram, "position"),
-      stride: 3
-    }, 
-    color: {
-      location: gl.getAttribLocation(frameBufferProgram, "color"),
-      stride: 4
-    },
-    normal: {
-      location: gl.getAttribLocation(frameBufferProgram, "normal"),
-      stride: 3
-    },
-    textureCoord: {
-      location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
-      stride: 2
-    }
-  }
-
   // uniform
   const frameBufferUniformLocation = {};
   frameBufferUniformLocation.mMatrix = gl.getUniformLocation(frameBufferProgram, "mMatrix");
@@ -149,41 +130,29 @@ export default (canvas, gl, width, height) => {
   frameBufferUniformLocation.useLight = gl.getUniformLocation(frameBufferProgram, "useLight");
   frameBufferUniformLocation.texture = gl.getUniformLocation(frameBufferProgram, "texture");
 
-
-
   // create shpere
   const sphere = createSphere(64, 64, 1.0, [1.0, 1.0, 1.0, 1.0]);
-  const sphereAttributesList = {
-    position: {
-      location: gl.getAttribLocation(frameBufferProgram, "position"),
-      stride: 3
-    },
-    color: {
-      location: gl.getAttribLocation(frameBufferProgram, "color"),
-      stride: 4
-    },
-    normal: {
-      location: gl.getAttribLocation(frameBufferProgram, "normal"),
-      stride: 3
-    },
-    textureCoord: {
-      location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
-      stride: 2
-    }
-  };
 	const sphereAttributes = [
     {
       label: "position",
       data: sphere.positions,
+      location: gl.getAttribLocation(frameBufferProgram, "position"),
+      stride: 3
     }, {
       label: "color",
       data: sphere.colors,
+      location: gl.getAttribLocation(frameBufferProgram, "color"),
+      stride: 4
     }, {
       label: "normal",
-      data: sphere.normals
+      data: sphere.normals,
+      location: gl.getAttribLocation(frameBufferProgram, "normal"),
+      stride: 3
     }, {
       label: "textureCoord",
-      data: sphere.textureCoords
+      data: sphere.textureCoords,
+      location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
+      stride: 2
     }
   ];
   const sphereVBOList = {};
@@ -191,7 +160,6 @@ export default (canvas, gl, width, height) => {
     sphereVBOList[attribute.label] = createVBO(gl, attribute.data);
   });
   const sphereIBO = createIBO(gl, sphere.indexes);
-
 
   // blur
   
@@ -344,7 +312,7 @@ export default (canvas, gl, width, height) => {
     m.multiply(pMatrix, vMatrix, tmpMatrix);
 
     _.forEach(sphereVBOList, (vbo, label) => {
-      const attributeData = sphereAttributesList[label];
+      const attributeData = sphereAttributes[label];
       setAttribute(gl, vbo, attributeData.location, attributeData.stride);
     });
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereIBO);

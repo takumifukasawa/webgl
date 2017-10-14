@@ -19443,26 +19443,8 @@ exports.default = function (canvas, gl, width, height) {
 
   var frameBufferProgram = (0, _createProgram2.default)(gl, frameBufferVertexShader, frameBufferFragmentShader);
 
-  var frameBufferAttributesList = {
-    position: {
-      location: gl.getAttribLocation(frameBufferProgram, "position"),
-      stride: 3
-    },
-    color: {
-      location: gl.getAttribLocation(frameBufferProgram, "color"),
-      stride: 4
-    },
-    normal: {
-      location: gl.getAttribLocation(frameBufferProgram, "normal"),
-      stride: 3
-    },
-    textureCoord: {
-      location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
-      stride: 2
-    }
-
-    // uniform
-  };var frameBufferUniformLocation = {};
+  // uniform
+  var frameBufferUniformLocation = {};
   frameBufferUniformLocation.mMatrix = gl.getUniformLocation(frameBufferProgram, "mMatrix");
   frameBufferUniformLocation.mvpMatrix = gl.getUniformLocation(frameBufferProgram, "mvpMatrix");
   frameBufferUniformLocation.invMatrix = gl.getUniformLocation(frameBufferProgram, "invMatrix");
@@ -19472,36 +19454,26 @@ exports.default = function (canvas, gl, width, height) {
 
   // create shpere
   var sphere = (0, _createSphere2.default)(64, 64, 1.0, [1.0, 1.0, 1.0, 1.0]);
-  var sphereAttributesList = {
-    position: {
-      location: gl.getAttribLocation(frameBufferProgram, "position"),
-      stride: 3
-    },
-    color: {
-      location: gl.getAttribLocation(frameBufferProgram, "color"),
-      stride: 4
-    },
-    normal: {
-      location: gl.getAttribLocation(frameBufferProgram, "normal"),
-      stride: 3
-    },
-    textureCoord: {
-      location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
-      stride: 2
-    }
-  };
   var sphereAttributes = [{
     label: "position",
-    data: sphere.positions
+    data: sphere.positions,
+    location: gl.getAttribLocation(frameBufferProgram, "position"),
+    stride: 3
   }, {
     label: "color",
-    data: sphere.colors
+    data: sphere.colors,
+    location: gl.getAttribLocation(frameBufferProgram, "color"),
+    stride: 4
   }, {
     label: "normal",
-    data: sphere.normals
+    data: sphere.normals,
+    location: gl.getAttribLocation(frameBufferProgram, "normal"),
+    stride: 3
   }, {
     label: "textureCoord",
-    data: sphere.textureCoords
+    data: sphere.textureCoords,
+    location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
+    stride: 2
   }];
   var sphereVBOList = {};
   _lodash2.default.forEach(sphereAttributes, function (attribute) {
@@ -19642,7 +19614,7 @@ exports.default = function (canvas, gl, width, height) {
     m.multiply(pMatrix, vMatrix, tmpMatrix);
 
     _lodash2.default.forEach(sphereVBOList, function (vbo, label) {
-      var attributeData = sphereAttributesList[label];
+      var attributeData = sphereAttributes[label];
       (0, _setAttribute2.default)(gl, vbo, attributeData.location, attributeData.stride);
     });
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereIBO);
