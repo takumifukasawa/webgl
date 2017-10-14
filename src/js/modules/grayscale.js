@@ -12,104 +12,103 @@ import { createCheckButton } from "./../utils/createInputs";
 import createTexture from "./../utils/createTexture";
 import createFrameBuffer from "./../utils/createFrameBuffer";
 
-let viewerSize = 0;
-
-const frameBufferVertexShaderText = `
-attribute vec3 position;
-attribute vec3 normal;
-attribute vec4 color;
-attribute vec2 textureCoord;
-uniform mat4 mMatrix;
-uniform mat4 mvpMatrix;
-uniform mat4 invMatrix;
-uniform vec3 lightDirection;
-uniform bool useLight;
-varying vec4 vColor;
-varying vec2 vTextureCoord;
-
-void main(void) {
-  if(useLight) {
-    vec3 invLight = normalize(invMatrix * vec4(lightDirection, 0.)).xyz;
-    float diffuse = clamp(dot(invLight, normal), .2, 1.);
-    vColor = vec4(color.xyz * diffuse, 1.);
-  } else {
-    vColor = color;
-  }
-  vTextureCoord = textureCoord;
-  gl_Position = mvpMatrix * vec4(position, 1.);
-}
-`;
-
-const frameBufferFragmentShaderText = `
-precision mediump float;
-
-uniform sampler2D texture;
-varying vec4 vColor;
-varying vec2 vTextureCoord;
-
-void main(void) {
-  vec4 smpColor = texture2D(texture, vTextureCoord);
-  gl_FragColor = vColor * smpColor;
-}
-`;
-
-const blurVertexShaderText = `
-attribute vec3 position;
-attribute vec4 color;
-uniform mat4 mvpMatrix;
-varying vec4 vColor;
-
-void main(void) {
-  vColor = color;
-  gl_Position = mvpMatrix * vec4(position, 1.);
-}
-`;
-
-const blurFragmentShaderText = `
-precision mediump float;
-
-uniform sampler2D texture;
-uniform bool useBlur;
-varying vec4 vColor;
-
-void main(void) {
-  vec2 tFrag = vec2(1. / ${viewerSize});
-  vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);
- 
-  if(useBlur) {
-    destColor *= .36;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;
-    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;
-  }
-  gl_FragColor = vColor * destColor;
-}
-`;
-
 export default (canvas, gl, width, height) => {
-  viewerSize = width;
+  const viewerSize = width;
+ 
+  const frameBufferVertexShaderText = `
+  attribute vec3 position;
+  attribute vec3 normal;
+  attribute vec4 color;
+  attribute vec2 textureCoord;
+  uniform mat4 mMatrix;
+  uniform mat4 mvpMatrix;
+  uniform mat4 invMatrix;
+  uniform vec3 lightDirection;
+  uniform bool useLight;
+  varying vec4 vColor;
+  varying vec2 vTextureCoord;
   
+  void main(void) {
+    if(useLight) {
+      vec3 invLight = normalize(invMatrix * vec4(lightDirection, 0.)).xyz;
+      float diffuse = clamp(dot(invLight, normal), .2, 1.);
+      vColor = vec4(color.xyz * diffuse, 1.);
+    } else {
+      vColor = color;
+    }
+    vTextureCoord = textureCoord;
+    gl_Position = mvpMatrix * vec4(position, 1.);
+  }
+  `;
+  
+  const frameBufferFragmentShaderText = `
+  precision mediump float;
+  
+  uniform sampler2D texture;
+  varying vec4 vColor;
+  varying vec2 vTextureCoord;
+  
+  void main(void) {
+    vec4 smpColor = texture2D(texture, vTextureCoord);
+    gl_FragColor = vColor * smpColor;
+  }
+  `;
+  
+  const blurVertexShaderText = `
+  attribute vec3 position;
+  attribute vec4 color;
+  uniform mat4 mvpMatrix;
+  varying vec4 vColor;
+  
+  void main(void) {
+    vColor = color;
+    gl_Position = mvpMatrix * vec4(position, 1.);
+  }
+  `;
+  
+  const blurFragmentShaderText = `
+  precision mediump float;
+  
+  uniform sampler2D texture;
+  uniform bool useBlur;
+  varying vec4 vColor;
+  
+  void main(void) {
+    vec2 tFrag = vec2(1. / ${viewerSize}.);
+    vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);
+   
+    if(useBlur) {
+      destColor *= .36;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;
+      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;
+    }
+    gl_FragColor = vColor * destColor;
+  }
+  `;
+
+ 
   let blurButton;
   let earthTexture, bgTexture;
   let lightDirection;
@@ -156,11 +155,11 @@ export default (canvas, gl, width, height) => {
       stride: 2
     }
   ];
-  const torusVBOList = {};
   _.forEach(torusAttributes, attribute => {
-    torusVBOList[attribute.label] = createVBO(gl, attribute.data);
+    attribute.vbo = createVBO(gl, attribute.data);
   });
-
+  console.log(torusAttributes)
+  const torusIBO = createIBO(gl, torus.indexes);
 
   // blur
   
@@ -217,9 +216,6 @@ export default (canvas, gl, width, height) => {
   blurUniformLocation.mvpMatrix = gl.getUniformLocation(blurProgram, "mvpMatrix");
   blurUniformLocation.texture = gl.getUniformLocation(blurProgram, "texture");
   blurUniformLocation.useBlur = gl.getUniformLocation(blurProgram, "useBlur");
-
-
-
 
 
   // init matrix
@@ -312,9 +308,8 @@ export default (canvas, gl, width, height) => {
     m.perspective(45, frameBufferWidth, frameBufferHeight, 0.1, 100, pMatrix);
     m.multiply(pMatrix, vMatrix, tmpMatrix);
 
-    _.forEach(torusVBOList, (vbo, label) => {
-      const attributeData = torusAttributes[label];
-      setAttribute(gl, vbo, attributeData.location, attributeData.stride);
+    _.forEach(torusAttributes, ({ vbo, location, stride }) => {
+      setAttribute(gl, vbo, location, stride);
     });
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, torusIBO);
 
@@ -349,7 +344,6 @@ export default (canvas, gl, width, height) => {
     gl.uniformMatrix4fv(frameBufferUniformLocation.invMatrix, false, invMatrix);
     gl.uniform1i(frameBufferUniformLocation.useLight, true);
     gl.drawElements(gl.TRIANGLES, torus.indexes.length, gl.UNSIGNED_SHORT, 0);
-   
   
     // 3. blur
 

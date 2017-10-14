@@ -6,6 +6,7 @@ export default function createTorus(row, column, irad, orad, color) {
   const colors = new Array();
   const indexes = new Array();
   const normals = new Array();
+  const textureCoords = new Array();
 
   for(let i=0; i<=row; i++) {
     const r = Math.PI * 2 / row * i;
@@ -20,10 +21,17 @@ export default function createTorus(row, column, irad, orad, color) {
       const rz = rr * Math.sin(tr);
       positions.push(tx, ty, tz);
       normals.push(rx, ry, rz);
+      let rs = 1 / column * ii;
+      let rt = 1 / row * i + 0.5;
+      if(rt > 1.0) {
+        rt -= 1.0;
+      }
+      rt = 1.0 - rt;
       const tc = color
         ? color
         : hsva(360 / column * ii, 1, 1, 1);
       tc.forEach(val => colors.push(val));
+      textureCoords.push(rs, rt);
     }
   }
  
@@ -35,5 +43,5 @@ export default function createTorus(row, column, irad, orad, color) {
     }
   }
 
-  return { positions, colors, indexes, normals };
+  return { positions, colors, indexes, normals, textureCoords };
 }

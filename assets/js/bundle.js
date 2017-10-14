@@ -20403,6 +20403,10 @@ var _createSphere = require("./../utils/createSphere");
 
 var _createSphere2 = _interopRequireDefault(_createSphere);
 
+var _createTorus = require("./../utils/createTorus");
+
+var _createTorus2 = _interopRequireDefault(_createTorus);
+
 var _createInputs = require("./../utils/createInputs");
 
 var _createTexture = require("./../utils/createTexture");
@@ -20415,15 +20419,17 @@ var _createFrameBuffer2 = _interopRequireDefault(_createFrameBuffer);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var frameBufferVertexShaderText = "\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec4 color;\nattribute vec2 textureCoord;\nuniform mat4 mMatrix;\nuniform mat4 mvpMatrix;\nuniform mat4 invMatrix;\nuniform vec3 lightDirection;\nuniform bool useLight;\nvarying vec4 vColor;\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  if(useLight) {\n    vec3 invLight = normalize(invMatrix * vec4(lightDirection, 0.)).xyz;\n    float diffuse = clamp(dot(invLight, normal), .2, 1.);\n    vColor = vec4(color.xyz * diffuse, 1.);\n  } else {\n    vColor = color;\n  }\n  vTextureCoord = textureCoord;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
+exports.default = function (canvas, gl, width, height) {
+  var viewerSize = width;
 
-var frameBufferFragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nvarying vec4 vColor;\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  vec4 smpColor = texture2D(texture, vTextureCoord);\n  gl_FragColor = vColor * smpColor;\n}\n";
+  var frameBufferVertexShaderText = "\n  attribute vec3 position;\n  attribute vec3 normal;\n  attribute vec4 color;\n  attribute vec2 textureCoord;\n  uniform mat4 mMatrix;\n  uniform mat4 mvpMatrix;\n  uniform mat4 invMatrix;\n  uniform vec3 lightDirection;\n  uniform bool useLight;\n  varying vec4 vColor;\n  varying vec2 vTextureCoord;\n  \n  void main(void) {\n    if(useLight) {\n      vec3 invLight = normalize(invMatrix * vec4(lightDirection, 0.)).xyz;\n      float diffuse = clamp(dot(invLight, normal), .2, 1.);\n      vColor = vec4(color.xyz * diffuse, 1.);\n    } else {\n      vColor = color;\n    }\n    vTextureCoord = textureCoord;\n    gl_Position = mvpMatrix * vec4(position, 1.);\n  }\n  ";
 
-var blurVertexShaderText = "\nattribute vec3 position;\nattribute vec4 color;\nuniform mat4 mvpMatrix;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vColor = color;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n";
+  var frameBufferFragmentShaderText = "\n  precision mediump float;\n  \n  uniform sampler2D texture;\n  varying vec4 vColor;\n  varying vec2 vTextureCoord;\n  \n  void main(void) {\n    vec4 smpColor = texture2D(texture, vTextureCoord);\n    gl_FragColor = vColor * smpColor;\n  }\n  ";
 
-var blurFragmentShaderText = "\nprecision mediump float;\n\nuniform sampler2D texture;\nuniform bool useBlur;\nvarying vec4 vColor;\n\nvoid main(void) {\n  vec2 tFrag = vec2(1. / 512.);\n  vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);\n \n  if(useBlur) {\n    destColor *= .36;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;\n    destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;\n  }\n  gl_FragColor = vColor * destColor;\n}\n";
+  var blurVertexShaderText = "\n  attribute vec3 position;\n  attribute vec4 color;\n  uniform mat4 mvpMatrix;\n  varying vec4 vColor;\n  \n  void main(void) {\n    vColor = color;\n    gl_Position = mvpMatrix * vec4(position, 1.);\n  }\n  ";
 
-exports.default = function (canvas, gl) {
+  var blurFragmentShaderText = "\n  precision mediump float;\n  \n  uniform sampler2D texture;\n  uniform bool useBlur;\n  varying vec4 vColor;\n  \n  void main(void) {\n    vec2 tFrag = vec2(1. / " + viewerSize + ".);\n    vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);\n   \n    if(useBlur) {\n      destColor *= .36;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;\n      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;\n    }\n    gl_FragColor = vColor * destColor;\n  }\n  ";
+
   var blurButton = void 0;
   var earthTexture = void 0,
       bgTexture = void 0;
@@ -20446,44 +20452,34 @@ exports.default = function (canvas, gl) {
   frameBufferUniformLocation.useLight = gl.getUniformLocation(frameBufferProgram, "useLight");
   frameBufferUniformLocation.texture = gl.getUniformLocation(frameBufferProgram, "texture");
 
-  // create shpere
-  var sphere = (0, _createSphere2.default)(64, 64, 1.0, [1.0, 1.0, 1.0, 1.0]);
-  var sphereAttributesList = {
-    position: {
-      location: gl.getAttribLocation(frameBufferProgram, "position"),
-      stride: 3
-    },
-    color: {
-      location: gl.getAttribLocation(frameBufferProgram, "color"),
-      stride: 4
-    },
-    normal: {
-      location: gl.getAttribLocation(frameBufferProgram, "normal"),
-      stride: 3
-    },
-    textureCoord: {
-      location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
-      stride: 2
-    }
-  };
-  var sphereAttributes = [{
+  // create torus
+  var torus = (0, _createTorus2.default)(64, 64, 1.0, 2.0, [1.0, 1.0, 1.0, 1.0]);
+  var torusAttributes = [{
     label: "position",
-    data: sphere.positions
+    data: torus.positions,
+    location: gl.getAttribLocation(frameBufferProgram, "position"),
+    stride: 3
   }, {
     label: "color",
-    data: sphere.colors
+    data: torus.colors,
+    location: gl.getAttribLocation(frameBufferProgram, "color"),
+    stride: 4
   }, {
     label: "normal",
-    data: sphere.normals
+    data: torus.normals,
+    location: gl.getAttribLocation(frameBufferProgram, "normal"),
+    stride: 3
   }, {
     label: "textureCoord",
-    data: sphere.textureCoords
+    data: torus.textureCoords,
+    location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
+    stride: 2
   }];
-  var sphereVBOList = {};
-  _lodash2.default.forEach(sphereAttributes, function (attribute) {
-    sphereVBOList[attribute.label] = (0, _createVBO2.default)(gl, attribute.data);
+  _lodash2.default.forEach(torusAttributes, function (attribute) {
+    attribute.vbo = (0, _createVBO2.default)(gl, attribute.data);
   });
-  var sphereIBO = (0, _createIBO2.default)(gl, sphere.indexes);
+  console.log(torusAttributes);
+  var torusIBO = (0, _createIBO2.default)(gl, torus.indexes);
 
   // blur
 
@@ -20554,8 +20550,8 @@ exports.default = function (canvas, gl) {
     gl.activeTexture(gl.TEXTURE0);
   });
 
-  var frameBufferWidth = 512;
-  var frameBufferHeight = 512;
+  var frameBufferWidth = width;
+  var frameBufferHeight = height;
   var fBuffer = (0, _createFrameBuffer2.default)(gl, frameBufferWidth, frameBufferHeight);
 
   // マウスムーブイベントに登録する処理
@@ -20617,11 +20613,14 @@ exports.default = function (canvas, gl) {
     m.perspective(45, frameBufferWidth, frameBufferHeight, 0.1, 100, pMatrix);
     m.multiply(pMatrix, vMatrix, tmpMatrix);
 
-    _lodash2.default.forEach(sphereVBOList, function (vbo, label) {
-      var attributeData = sphereAttributesList[label];
-      (0, _setAttribute2.default)(gl, vbo, attributeData.location, attributeData.stride);
+    _lodash2.default.forEach(torusAttributes, function (_ref3) {
+      var vbo = _ref3.vbo,
+          location = _ref3.location,
+          stride = _ref3.stride;
+
+      (0, _setAttribute2.default)(gl, vbo, location, stride);
     });
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sphereIBO);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, torusIBO);
 
     lightDirection = [-1.0, 2.0, 1.0];
 
@@ -20640,7 +20639,7 @@ exports.default = function (canvas, gl) {
     gl.uniform3fv(frameBufferUniformLocation.lightDirection, lightDirection);
     gl.uniform1i(frameBufferUniformLocation.useLight, false);
     gl.uniform1i(frameBufferUniformLocation.texture, 0);
-    gl.drawElements(gl.TRIANGLES, sphere.indexes.length, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, torus.indexes.length, gl.UNSIGNED_SHORT, 0);
 
     // 2. earth
 
@@ -20653,7 +20652,7 @@ exports.default = function (canvas, gl) {
     gl.uniformMatrix4fv(frameBufferUniformLocation.mvpMatrix, false, mvpMatrix);
     gl.uniformMatrix4fv(frameBufferUniformLocation.invMatrix, false, invMatrix);
     gl.uniform1i(frameBufferUniformLocation.useLight, true);
-    gl.drawElements(gl.TRIANGLES, sphere.indexes.length, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, torus.indexes.length, gl.UNSIGNED_SHORT, 0);
 
     // 3. blur
 
@@ -20706,7 +20705,7 @@ exports.default = function (canvas, gl) {
   };
 };
 
-},{"./../config/":84,"./../utils/createFrameBuffer":109,"./../utils/createIBO":110,"./../utils/createInputs":111,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createSphere":114,"./../utils/createTexture":115,"./../utils/createVBO":117,"./../utils/setAttribute":119,"babel-runtime/core-js/promise":3,"babel-runtime/helpers/slicedToArray":4,"lodash":80}],93:[function(require,module,exports){
+},{"./../config/":84,"./../utils/createFrameBuffer":109,"./../utils/createIBO":110,"./../utils/createInputs":111,"./../utils/createProgram":112,"./../utils/createShader":113,"./../utils/createSphere":114,"./../utils/createTexture":115,"./../utils/createTorus":116,"./../utils/createVBO":117,"./../utils/setAttribute":119,"babel-runtime/core-js/promise":3,"babel-runtime/helpers/slicedToArray":4,"lodash":80}],93:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -23069,6 +23068,7 @@ function createTorus(row, column, irad, orad, color) {
   var colors = new Array();
   var indexes = new Array();
   var normals = new Array();
+  var textureCoords = new Array();
 
   for (var i = 0; i <= row; i++) {
     var r = Math.PI * 2 / row * i;
@@ -23083,10 +23083,17 @@ function createTorus(row, column, irad, orad, color) {
       var rz = rr * Math.sin(tr);
       positions.push(tx, ty, tz);
       normals.push(rx, ry, rz);
+      var rs = 1 / column * ii;
+      var rt = 1 / row * i + 0.5;
+      if (rt > 1.0) {
+        rt -= 1.0;
+      }
+      rt = 1.0 - rt;
       var tc = color ? color : (0, _hsva2.default)(360 / column * ii, 1, 1, 1);
       tc.forEach(function (val) {
         return colors.push(val);
       });
+      textureCoords.push(rs, rt);
     }
   }
 
@@ -23098,7 +23105,7 @@ function createTorus(row, column, irad, orad, color) {
     }
   }
 
-  return { positions: positions, colors: colors, indexes: indexes, normals: normals };
+  return { positions: positions, colors: colors, indexes: indexes, normals: normals, textureCoords: textureCoords };
 }
 
 },{"./../utils/hsva":118}],117:[function(require,module,exports){
