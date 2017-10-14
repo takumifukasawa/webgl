@@ -6,7 +6,7 @@ import createIBO from "./../utils/createIBO";
 import createShader from "./../utils/createShader";
 import createProgram from "./../utils/createProgram";
 import setAttribute from "./../utils/setAttribute";
-import createTorusGeometry from "./../utils/createTorusGeometry";
+import createTorus from "./../utils/createTorus";
 import createSphere from "./../utils/createSphere";
 
 const vertexShaderText = `
@@ -75,7 +75,7 @@ export default (canvas, gl) => {
   };
 
   // create torus
-  const torus = createTorusGeometry(32, 32, 1.0, 2.0, [0.75, 0.25, 0.25, 1.0]);
+  const torus = createTorus(32, 32, 1.0, 2.0, [0.75, 0.25, 0.25, 1.0]);
   const torusAttributes = [
     {
       label: "position",

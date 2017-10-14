@@ -6,7 +6,7 @@ import createIBO from "./../utils/createIBO";
 import createShader from "./../utils/createShader";
 import createProgram from "./../utils/createProgram";
 import setAttribute from "./../utils/setAttribute";
-import createTorusGeometry from "./../utils/createTorusGeometry";
+import createTorus from "./../utils/createTorus";
 
 const vertexShaderText = `
 attribute vec3 position;
@@ -36,7 +36,7 @@ export default (canvas, gl) => {
 
   const program = createProgram(gl, vertexShader, fragmentShader);
 
-  const { positions, colors, indexes } = createTorusGeometry(32, 32, 1.0, 2.0);
+  const { positions, colors, indexes } = createTorus(32, 32, 1.0, 2.0);
 
   const attributes = [
     {

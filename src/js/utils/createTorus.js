@@ -1,7 +1,7 @@
 
 import hsva from "./../utils/hsva";
 
-export default function createTorusGeometry(row, column, irad, orad, color) {
+export default function createTorus(row, column, irad, orad, color) {
   const positions = new Array();
   const colors = new Array();
   const indexes = new Array();
