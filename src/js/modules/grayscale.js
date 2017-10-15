@@ -11,107 +11,81 @@ import createTorus from "./../utils/createTorus";
 import { createCheckButton } from "./../utils/createInputs";
 import createTexture from "./../utils/createTexture";
 import createFrameBuffer from "./../utils/createFrameBuffer";
+import hsva from "./../utils/hsva";
 
 export default (canvas, gl, width, height) => {
-  const viewerSize = width;
  
   const frameBufferVertexShaderText = `
-  attribute vec3 position;
-  attribute vec3 normal;
-  attribute vec4 color;
-  attribute vec2 textureCoord;
-  uniform mat4 mMatrix;
-  uniform mat4 mvpMatrix;
-  uniform mat4 invMatrix;
-  uniform vec3 lightDirection;
-  uniform bool useLight;
-  varying vec4 vColor;
-  varying vec2 vTextureCoord;
-  
-  void main(void) {
-    if(useLight) {
-      vec3 invLight = normalize(invMatrix * vec4(lightDirection, 0.)).xyz;
-      float diffuse = clamp(dot(invLight, normal), .2, 1.);
-      vColor = vec4(color.xyz * diffuse, 1.);
-    } else {
-      vColor = color;
-    }
-    vTextureCoord = textureCoord;
-    gl_Position = mvpMatrix * vec4(position, 1.);
-  }
+attribute vec3 position;
+attribute vec3 normal;
+attribute vec4 color;
+uniform mat4 mvpMatrix;
+uniform mat4 invMatrix;
+uniform vec3 lightDirection;
+uniform vec3 eyeDirection;
+uniform vec4 ambientColor;
+varying vec4 vColor;
+
+void main(void) {
+  vec3 invLight = normalize(invMatrix * vec4(lightDirection, 0.)).xyz;
+  vec3 invEye = normalize(invMatrix * vec4(eyeDirection, 0.)).xyz;
+  vec3 halfLE = normalize(invLight + invEye);
+  float diffuse = clamp(dot(normal, invLight), 0., 1.);
+  float specular = pow(clamp(dot(normal, halfLE), 0., 1.), 50.);
+  vec4 ambient = color * ambientColor;
+  vColor = ambient = vec4(vec3(diffuse), 1.) + vec4(vec3(specular), 1.);
+  gl_Position = mvpMatrix * vec4(position, 1.);
+}
   `;
   
   const frameBufferFragmentShaderText = `
-  precision mediump float;
-  
-  uniform sampler2D texture;
-  varying vec4 vColor;
-  varying vec2 vTextureCoord;
-  
-  void main(void) {
-    vec4 smpColor = texture2D(texture, vTextureCoord);
-    gl_FragColor = vColor * smpColor;
-  }
+precision mediump float;
+varying vec4 vColor;
+
+void main(void) {
+  gl_FragColor = vColor;
+}
   `;
   
-  const blurVertexShaderText = `
-  attribute vec3 position;
-  attribute vec4 color;
-  uniform mat4 mvpMatrix;
-  varying vec4 vColor;
-  
-  void main(void) {
-    vColor = color;
-    gl_Position = mvpMatrix * vec4(position, 1.);
-  }
+  const filterVertexShaderText = `
+attribute vec3 position;
+attribute vec2 textureCoord;
+uniform mat4 mvpMatrix;
+varying vec2 vTextureCoord;
+
+void main(void) {
+  vTextureCoord = textureCoord;
+  gl_Position = mvpMatrix * vec4(position, 1.);
+}
   `;
   
-  const blurFragmentShaderText = `
-  precision mediump float;
-  
-  uniform sampler2D texture;
-  uniform bool useBlur;
-  varying vec4 vColor;
-  
-  void main(void) {
-    vec2 tFrag = vec2(1. / ${viewerSize}.);
-    vec4 destColor = texture2D(texture, gl_FragCoord.st * tFrag);
-   
-    if(useBlur) {
-      destColor *= .36;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  1.)) * tFrag) * .04;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  1.)) * tFrag) * .04;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  1.)) * tFrag) * .04;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  0.)) * tFrag) * .04;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  0.)) * tFrag) * .04;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -1.)) * tFrag) * .04;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -1.)) * tFrag) * .04;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -1.)) * tFrag) * .04;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  2.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1.,  2.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0.,  2.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1.,  2.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  2.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  1.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  1.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2.,  0.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2.,  0.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -1.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -1.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-2., -2.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2(-1., -2.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 0., -2.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 1., -2.)) * tFrag) * .02;
-      destColor += texture2D(texture, (gl_FragCoord.st + vec2( 2., -2.)) * tFrag) * .02;
-    }
-    gl_FragColor = vColor * destColor;
+  const filterFragmentShaderText = `
+precision mediump float;
+
+uniform sampler2D texture;
+uniform bool useGrayscale;
+varying vec2 vTextureCoord;
+
+const float redScale = 0.298912;
+const float greenScale = 0.586611;
+const float blueScale = 0.114478;
+const vec3 monochromeScale = vec3(redScale, greenScale, blueScale);
+
+void main(void) {
+  vec4 smpColor = texture2D(texture, vTextureCoord);
+  if(useGrayscale) {
+    float grayColor = dot(smpColor.rgb, monochromeScale);
+    smpColor = vec4(vec3(grayColor), 1.);
   }
+  gl_FragColor = smpColor;
+}
   `;
 
  
-  let blurButton;
+  let grayscaleButton;
   let earthTexture, bgTexture;
-  let lightDirection;
+  
+  const lightDirection = [-0.577, 0.577, 0.577];
 
   const q = new qtnIV();
   const qt = q.identity(q.create());
@@ -127,6 +101,8 @@ export default (canvas, gl, width, height) => {
   frameBufferUniformLocation.mvpMatrix = gl.getUniformLocation(frameBufferProgram, "mvpMatrix");
   frameBufferUniformLocation.invMatrix = gl.getUniformLocation(frameBufferProgram, "invMatrix");
   frameBufferUniformLocation.lightDirection = gl.getUniformLocation(frameBufferProgram, "lightDirection");
+  frameBufferUniformLocation.eyeDirection = gl.getUniformLocation(frameBufferProgram, "eyeDirection");
+  frameBufferUniformLocation.ambientColor = gl.getUniformLocation(frameBufferProgram, "ambientColor");
   frameBufferUniformLocation.useLight = gl.getUniformLocation(frameBufferProgram, "useLight");
   frameBufferUniformLocation.texture = gl.getUniformLocation(frameBufferProgram, "texture");
 
@@ -148,74 +124,59 @@ export default (canvas, gl, width, height) => {
       data: torus.normals,
       location: gl.getAttribLocation(frameBufferProgram, "normal"),
       stride: 3
-    }, {
-      label: "textureCoord",
-      data: torus.textureCoords,
-      location: gl.getAttribLocation(frameBufferProgram, "textureCoord"),
-      stride: 2
     }
   ];
   _.forEach(torusAttributes, attribute => {
     attribute.vbo = createVBO(gl, attribute.data);
   });
-  console.log(torusAttributes)
   const torusIBO = createIBO(gl, torus.indexes);
 
-  // blur
+  // filter
   
-  const blurVertexShader = createShader(gl, SHADER_TYPES.VERTEX_SHADER, blurVertexShaderText);
-  const blurFragmentShader = createShader(gl, SHADER_TYPES.FRAGMENT_SHADER, blurFragmentShaderText);
+  const filterVertexShader = createShader(gl, SHADER_TYPES.VERTEX_SHADER, filterVertexShaderText);
+  const filterFragmentShader = createShader(gl, SHADER_TYPES.FRAGMENT_SHADER, filterFragmentShaderText);
 
-  const blurProgram = createProgram(gl, blurVertexShader, blurFragmentShader);
+  const filterProgram = createProgram(gl, filterVertexShader, filterFragmentShader);
 
-  const blur = {
-    positions: [
-      -1.0, 1.0, 0.0,
-      1.0, 1.0, 0.0,
-      -1.0, -1.0, 0.0,
-      1.0, -1.0, 0.0
-    ],
-    colors: [
-      1.0, 1.0, 1.0, 1.0,
-      1.0, 1.0, 1.0, 1.0,
-      1.0, 1.0, 1.0, 1.0,
-      1.0, 1.0, 1.0, 1.0,
-    ],
+  const filter = {
     indexes: [
-      0, 1, 2,
-      3, 2, 1
+      0, 2, 1,
+      2, 3, 1
     ],
   }
 
-  const blurAttributesList = {
-    position: {
-      location: gl.getAttribLocation(blurProgram, "position"),
-      stride: 3
-    },
-    color: {
-      location: gl.getAttribLocation(blurProgram, "color"),
-      stride: 4
-    }
-  };
-	const blurAttributes = [
+  const filterAttributes = [
     {
       label: "position",
-      data: blur.positions,
-    }, {
-      label: "color",
-      data: blur.colors,
+      location: gl.getAttribLocation(filterProgram, "position"),
+      stride: 3,
+      data: [
+        -1.0, 1.0, 0.0,
+        1.0, 1.0, 0.0,
+        -1.0, -1.0, 0.0,
+        1.0, -1.0, 0.0
+      ],
+   }, {
+      label: "textureCoord",
+      location: gl.getAttribLocation(filterProgram, "textureCoord"),
+      stride: 2,
+      data: [
+        0.0, 0.0,
+        1.0, 0.0,
+        0.0, 1.0,
+        1.0, 1.0
+      ],
     }
   ];
-  const blurVBOList = {};
-  _.forEach(blurAttributes, attribute => {
-    blurVBOList[attribute.label] = createVBO(gl, attribute.data);
+  _.forEach(filterAttributes, attribute => {
+    attribute.vbo = createVBO(gl, attribute.data);
   });
-  const blurIBO = createIBO(gl, blur.indexes);
+  const filterIBO = createIBO(gl, filter.indexes);
 
-  const blurUniformLocation = {};
-  blurUniformLocation.mvpMatrix = gl.getUniformLocation(blurProgram, "mvpMatrix");
-  blurUniformLocation.texture = gl.getUniformLocation(blurProgram, "texture");
-  blurUniformLocation.useBlur = gl.getUniformLocation(blurProgram, "useBlur");
+  const filterUniformLocation = {};
+  filterUniformLocation.mvpMatrix = gl.getUniformLocation(filterProgram, "mvpMatrix");
+  filterUniformLocation.texture = gl.getUniformLocation(filterProgram, "texture");
+  filterUniformLocation.useGrayscale = gl.getUniformLocation(filterProgram, "useGrayscale");
 
 
   // init matrix
@@ -242,7 +203,7 @@ export default (canvas, gl, width, height) => {
   ]).then(([earthT, bgT]) => {
     earthTexture = earthT;
     bgTexture = bgT;
-    gl.activeTexture(gl.TEXTURE0);
+    //gl.activeTexture(gl.TEXTURE0);
   });
 
   const frameBufferWidth = width;
@@ -291,21 +252,26 @@ export default (canvas, gl, width, height) => {
 		if(!earthTexture || !bgTexture) return;
 
     const rad = ((time / 40) % 360) * Math.PI / 180;
+    
+    gl.useProgram(frameBufferProgram);
 
     // bind frame buffer
     gl.bindFramebuffer(gl.FRAMEBUFFER, fBuffer.frameBuffer);
 
     // clear frame buffer
-    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    const bgHSV = hsva(time / 100 % 360, 1, 1, 1);
+    gl.clearColor(bgHSV[0], bgHSV[1], bgHSV[2], bgHSV[3]);
 		gl.clearDepth(1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    // 1. draw earth
+    // 1. draw torus
 
-    gl.useProgram(frameBufferProgram);
-
-    m.lookAt([0.0, 0.0, 5.0], [0, 0, 0], [0, 1, 0], vMatrix);
-    m.perspective(45, frameBufferWidth, frameBufferHeight, 0.1, 100, pMatrix);
+    const eyePosition = new Array();
+    const camUpDirection = new Array();
+    q.toVecIII([0.0, 20.0, 0.0], qt, eyePosition);
+    q.toVecIII([0.0, 0.0, -1.0], qt, camUpDirection);
+    m.lookAt(eyePosition, [0, 0, 0], camUpDirection, vMatrix);
+    m.perspective(90, width / height, 0.1, 100, pMatrix);
     m.multiply(pMatrix, vMatrix, tmpMatrix);
 
     _.forEach(torusAttributes, ({ vbo, location, stride }) => {
@@ -313,39 +279,25 @@ export default (canvas, gl, width, height) => {
     });
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, torusIBO);
 
-    lightDirection = [-1.0, 2.0, 1.0];
+    for(let i =0; i<9; i++) {
+      const ambientColor = hsva(i * 40, 1, 1, 1);
+      m.identity(mMatrix);
+			m.rotate(mMatrix, i * 2 * Math.PI / 9, [0, 1, 0], mMatrix);
+			m.translate(mMatrix, [0.0, 0.0, 10.0], mMatrix);
+			m.rotate(mMatrix, rad, [1, 1, 0], mMatrix);
+			m.multiply(tmpMatrix, mMatrix, mvpMatrix);
+			m.inverse(mMatrix, invMatrix);
+      gl.uniformMatrix4fv(frameBufferUniformLocation.mvpMatrix, false, mvpMatrix);
+      gl.uniformMatrix4fv(frameBufferUniformLocation.invMatrix, false, invMatrix);
+      gl.uniform3fv(frameBufferUniformLocation.lightDirection, lightDirection);
+      gl.uniform3fv(frameBufferUniformLocation.eyePosition, eyePosition);
+      gl.uniform4fv(frameBufferUniformLocation.ambientColor, ambientColor);
+      gl.drawElements(gl.TRIANGLES, torus.indexes.length, gl.UNSIGNED_SHORT, 0);
+    }
 
-    m.lookAt([0.0, 0.0, 5.0], [0, 0, 0], [0, 1, 0], vMatrix);
-    m.perspective(45, frameBufferWidth / frameBufferHeight, 0.1, 100, pMatrix);
-    m.multiply(pMatrix, vMatrix, tmpMatrix);
-
-    gl.bindTexture(gl.TEXTURE_2D, bgTexture);
-    m.identity(mMatrix);
-    m.scale(mMatrix, [50.0, 50.0, 50.0], mMatrix);
-    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
-    m.inverse(mMatrix, invMatrix);
-    gl.uniformMatrix4fv(frameBufferUniformLocation.mMatrix, false, mMatrix);
-    gl.uniformMatrix4fv(frameBufferUniformLocation.mvpMatrix, false, mvpMatrix);
-    gl.uniformMatrix4fv(frameBufferUniformLocation.invMatrix, false, invMatrix);
-    gl.uniform3fv(frameBufferUniformLocation.lightDirection, lightDirection);
-    gl.uniform1i(frameBufferUniformLocation.useLight, false);
-    gl.uniform1i(frameBufferUniformLocation.texture, 0);
-    gl.drawElements(gl.TRIANGLES, torus.indexes.length, gl.UNSIGNED_SHORT, 0);
-
-    // 2. earth
-
-    gl.bindTexture(gl.TEXTURE_2D, earthTexture);
-    m.identity(mMatrix);
-    m.rotate(mMatrix, rad, [0, 1, 0], mMatrix);
-    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
-    m.inverse(mMatrix, invMatrix);
-    gl.uniformMatrix4fv(frameBufferUniformLocation.mMatrix, false, mMatrix);
-    gl.uniformMatrix4fv(frameBufferUniformLocation.mvpMatrix, false, mvpMatrix);
-    gl.uniformMatrix4fv(frameBufferUniformLocation.invMatrix, false, invMatrix);
-    gl.uniform1i(frameBufferUniformLocation.useLight, true);
-    gl.drawElements(gl.TRIANGLES, torus.indexes.length, gl.UNSIGNED_SHORT, 0);
-  
-    // 3. blur
+    // 3. filter
+    
+    gl.useProgram(filterProgram);
 
     // unbind frameBuffer
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -355,42 +307,39 @@ export default (canvas, gl, width, height) => {
 		gl.clearDepth(1.0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    gl.useProgram(blurProgram);
-
-    const useBlur = !!blurButton.inputElem.checked;
-
-    _.forEach(blurVBOList, (vbo, label) => {
-      const attributeData = blurAttributesList[label];
-      setAttribute(gl, vbo, attributeData.location, attributeData.stride);
-    });
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, blurIBO);
-
+		m.lookAt([0.0, 0.0, 0.5], [0.0, 0.0, 0.0], [0, 1, 0], vMatrix);
+    //m.perspective(90, width / height, 0.1, 100, pMatrix);
+		m.ortho(-1.0, 1.0, 1.0, -1.0, 0.1, 1, pMatrix);
+		m.multiply(pMatrix, vMatrix, tmpMatrix);
+    
+    gl.activeTexture(gl.TEXTURE0); 
     gl.bindTexture(gl.TEXTURE_2D, fBuffer.frameBufferTexture);
 
-		m.lookAt([0.0, 0.0, 0.5], [0.0, 0.0, 0.0], [0, 1, 0], vMatrix);
-    m.perspective(45, width / height, 0.1, 100, pMatrix);
-		//m.ortho(-1.0, 1.0, 1.0, -1.0, 0.1, 1, pMatrix);
-		m.multiply(pMatrix, vMatrix, tmpMatrix);
-		
-		m.identity(mMatrix);
-		m.multiply(tmpMatrix, vMatrix, mvpMatrix);
-    gl.uniformMatrix4fv(blurUniformLocation.mvpMatrix, false, mvpMatrix);
-    gl.uniform1i(blurUniformLocation.texture, 0);
-    gl.uniform1i(blurUniformLocation.useBlur, useBlur);
-    gl.drawElements(gl.TRIANGLES, blur.indexes.length, gl.UNSIGNED_SHORT, 0);
+    const useGrayscale = !!grayscaleButton.inputElem.checked;
+
+    _.forEach(filterAttributes, ({ vbo, location, stride }) => {
+      setAttribute(gl, vbo, location, stride);
+    });
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, filterIBO);
+	
+    gl.uniformMatrix4fv(filterUniformLocation.mvpMatrix, false, tmpMatrix);
+    gl.uniform1i(filterUniformLocation.texture, 0);
+    gl.uniform1i(filterUniformLocation.useGrayscale, useGrayscale);
+    gl.drawElements(gl.TRIANGLES, filter.indexes.length, gl.UNSIGNED_SHORT, 0);
 
     gl.flush();
   }
 
   const addMenu = (parentElem) => {
     const frag = document.createDocumentFragment();
-    blurButton = createCheckButton("blur", "checkbox", "use blur");
-    frag.appendChild(blurButton.parentElem);
+    grayscaleButton = createCheckButton("filter", "checkbox", "use filter");
+    frag.appendChild(grayscaleButton.parentElem);
     parentElem.appendChild(frag);
   }
 
   return {
     setSize,
+    mouseMove,
     tick,
     addMenu
   }
