@@ -18,6 +18,7 @@ import pointSprite from "./pointSprite";
 import frameBuffer from "./frameBuffer";
 import blurFilter from "./blurFilter";
 import grayscale from "./grayscale";
+import sepia from "./sepia";
 
 export default {
   simplePolygon,
@@ -38,5 +39,6 @@ export default {
   pointSprite,
   frameBuffer,
   blurFilter,
-  grayscale
+  grayscale,
+  sepia
 };
