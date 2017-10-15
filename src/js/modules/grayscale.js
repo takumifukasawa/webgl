@@ -33,7 +33,7 @@ void main(void) {
   float diffuse = clamp(dot(normal, invLight), 0., 1.);
   float specular = pow(clamp(dot(normal, halfLE), 0., 1.), 50.);
   vec4 ambient = color * ambientColor;
-  vColor = ambient = vec4(vec3(diffuse), 1.) + vec4(vec3(specular), 1.);
+  vColor = ambient * vec4(vec3(diffuse), 1.) + vec4(vec3(specular), 1.);
   gl_Position = mvpMatrix * vec4(position, 1.);
 }
   `;
