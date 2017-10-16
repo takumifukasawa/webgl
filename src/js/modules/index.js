@@ -19,6 +19,7 @@ import frameBuffer from "./frameBuffer";
 import blurFilter from "./blurFilter";
 import grayscale from "./grayscale";
 import sepia from "./sepia";
+import sobel from "./sobel";
 
 export default {
   simplePolygon,
@@ -40,5 +41,6 @@ export default {
   frameBuffer,
   blurFilter,
   grayscale,
-  sepia
+  sepia,
+  sobel
 };
