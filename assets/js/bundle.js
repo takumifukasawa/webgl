@@ -22503,9 +22503,10 @@ exports.default = function (canvas, gl, width, height) {
 
   var filterFragmentShaderText = "\nprecision mediump float;\nuniform sampler2D texture;\nuniform bool useSobel;\nuniform bool useSobelGray;\nuniform float hCoef[9];\nuniform float vCoef[9];\nvarying vec2 vTextureCoord;\n\nconst float redScale = 0.298912;\nconst float greenScale = 0.586611;\nconst float blueScale = 0.114478;\nconst vec3 monochrmeScale = vec3(redScale, greenScale, blueScale);\n\nvoid main(void) {\n  vec2 offset[9];\n  offset[0] = vec2(-1.0, -1.0);\n  offset[1] = vec2( 0.0, -1.0);\n  offset[2] = vec2( 1.0, -1.0);\n  offset[3] = vec2(-1.0,  0.0);\n  offset[4] = vec2( 0.0,  0.0);\n  offset[5] = vec2( 1.0,  0.0);\n  offset[6] = vec2(-1.0,  1.0);\n  offset[7] = vec2( 0.0,  1.0);\n  offset[8] = vec2( 1.0,  1.0);\n  \n  float tFrag = 1. / " + viewerSize + ".;\n  \n  vec2 fc = vec2(gl_FragCoord.s, " + viewerSize + ". - gl_FragCoord.t);\n  \n  vec3 horizontalColor = vec3(0.);\n  vec3 verticalColor = vec3(0.);\n  vec4 destColor = vec4(0.);\n\n  horizontalColor += texture2D(texture, (fc + offset[0]) * tFrag).rgb * hCoef[0];\n  horizontalColor += texture2D(texture, (fc + offset[1]) * tFrag).rgb * hCoef[1];\n  horizontalColor += texture2D(texture, (fc + offset[2]) * tFrag).rgb * hCoef[2];\n  horizontalColor += texture2D(texture, (fc + offset[3]) * tFrag).rgb * hCoef[3];\n  horizontalColor += texture2D(texture, (fc + offset[4]) * tFrag).rgb * hCoef[4];\n  horizontalColor += texture2D(texture, (fc + offset[5]) * tFrag).rgb * hCoef[5];\n  horizontalColor += texture2D(texture, (fc + offset[6]) * tFrag).rgb * hCoef[6];\n  horizontalColor += texture2D(texture, (fc + offset[7]) * tFrag).rgb * hCoef[7];\n  horizontalColor += texture2D(texture, (fc + offset[8]) * tFrag).rgb * hCoef[8];\n\n  verticalColor += texture2D(texture, (fc + offset[0]) * tFrag).rgb * vCoef[0];\n  verticalColor += texture2D(texture, (fc + offset[1]) * tFrag).rgb * vCoef[1];\n  verticalColor += texture2D(texture, (fc + offset[2]) * tFrag).rgb * vCoef[2];\n  verticalColor += texture2D(texture, (fc + offset[3]) * tFrag).rgb * vCoef[3];\n  verticalColor += texture2D(texture, (fc + offset[4]) * tFrag).rgb * vCoef[4];\n  verticalColor += texture2D(texture, (fc + offset[5]) * tFrag).rgb * vCoef[5];\n  verticalColor += texture2D(texture, (fc + offset[6]) * tFrag).rgb * vCoef[6];\n  verticalColor += texture2D(texture, (fc + offset[7]) * tFrag).rgb * vCoef[7];\n  verticalColor += texture2D(texture, (fc + offset[8]) * tFrag).rgb * vCoef[8];\n\n  if(useSobel) {\n    destColor = vec4(vec3(sqrt(horizontalColor * horizontalColor + verticalColor * verticalColor)), 1.);\n  } else {\n    destColor = texture2D(texture, vTextureCoord);\n  }\n\n  if(useSobelGray) {\n    float grayColor = dot(destColor.rgb, monochrmeScale);\n    destColor = vec4(vec3(grayColor), 1.);\n  }\n\n  gl_FragColor = destColor;\n}\n  ";
 
-  var radioButtons = void 0;
-  var earthTexture = void 0,
-      bgTexture = void 0;
+  var filterRadioButtons = void 0,
+      textureRadioButtons = void 0;
+  var texture1 = void 0,
+      texture2 = void 0;
 
   var lightDirection = [-0.577, 0.577, 0.577];
 
@@ -22607,13 +22608,13 @@ exports.default = function (canvas, gl, width, height) {
   //gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE);
 
   // load texture
-  _promise2.default.all([(0, _createTexture2.default)(gl, "./assets/images/earth.png"), (0, _createTexture2.default)(gl, "./assets/images/bg.jpg")]).then(function (_ref) {
+  _promise2.default.all([(0, _createTexture2.default)(gl, "./assets/images/pic1.jpg"), (0, _createTexture2.default)(gl, "./assets/images/pic2.jpg")]).then(function (_ref) {
     var _ref2 = (0, _slicedToArray3.default)(_ref, 2),
-        earthT = _ref2[0],
-        bgT = _ref2[1];
+        t1 = _ref2[0],
+        t2 = _ref2[1];
 
-    earthTexture = earthT;
-    bgTexture = bgT;
+    texture1 = t1;
+    texture2 = t2;
     //gl.activeTexture(gl.TEXTURE0);
   });
 
@@ -22660,7 +22661,7 @@ exports.default = function (canvas, gl, width, height) {
 
   // loop
   var tick = function tick(time, width, height) {
-    if (!earthTexture || !bgTexture) return;
+    if (!texture1 || !texture2) return;
 
     var rad = time / 40 % 360 * Math.PI / 180;
 
@@ -22728,14 +22729,23 @@ exports.default = function (canvas, gl, width, height) {
     m.multiply(pMatrix, vMatrix, tmpMatrix);
 
     gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, fBuffer.frameBufferTexture);
 
+    // select texture
+    if (textureRadioButtons.inputElems.default.checked) {
+      gl.bindTexture(gl.TEXTURE_2D, fBuffer.frameBufferTexture);
+    } else if (textureRadioButtons.inputElems.texture1.checked) {
+      gl.bindTexture(gl.TEXTURE_2D, texture1);
+    } else if (textureRadioButtons.inputElems.texture2.checked) {
+      gl.bindTexture(gl.TEXTURE_2D, texture2);
+    }
+
+    // select filter
     var useSobel = void 0,
         useSobelGray = false;
-    if (radioButtons.inputElems.sobel.checked) {
+    if (filterRadioButtons.inputElems.sobel.checked) {
       useSobel = true;
     }
-    if (radioButtons.inputElems.sobelGrayscale.checked) {
+    if (filterRadioButtons.inputElems.sobelGrayscale.checked) {
       useSobel = true;
       useSobelGray = true;
     }
@@ -22762,11 +22772,16 @@ exports.default = function (canvas, gl, width, height) {
 
   var addMenu = function addMenu(parentElem) {
     var frag = document.createDocumentFragment();
-    radioButtons = (0, _createInputs.createRadioButton)({
+    filterRadioButtons = (0, _createInputs.createRadioButton)({
       name: "filter",
       data: [{ id: "normal", checked: true }, { id: "sobel" }, { id: "sobelGrayscale" }]
     });
-    frag.appendChild(radioButtons.parentElem);
+    textureRadioButtons = (0, _createInputs.createRadioButton)({
+      name: "texture",
+      data: [{ id: "default", checked: true }, { id: "texture1" }, { id: "texture2" }]
+    });
+    frag.appendChild(filterRadioButtons.parentElem);
+    frag.appendChild(textureRadioButtons.parentElem);
     parentElem.appendChild(frag);
   };
 

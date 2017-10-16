@@ -130,9 +130,9 @@ void main(void) {
   `;
 
 
-  let radioButtons;
-  let earthTexture, bgTexture;
-  
+  let filterRadioButtons, textureRadioButtons;
+  let texture1, texture2
+
   const lightDirection = [-0.577, 0.577, 0.577];
 
   const hCoef = [
@@ -259,11 +259,11 @@ void main(void) {
 
   // load texture
   Promise.all([
-    createTexture(gl, "./assets/images/earth.png"),
-    createTexture(gl, "./assets/images/bg.jpg"),
-  ]).then(([earthT, bgT]) => {
-    earthTexture = earthT;
-    bgTexture = bgT;
+    createTexture(gl, "./assets/images/pic1.jpg"),
+    createTexture(gl, "./assets/images/pic2.jpg"),
+  ]).then(([t1, t2]) => {
+    texture1 = t1;
+    texture2 = t2;
     //gl.activeTexture(gl.TEXTURE0);
   });
 
@@ -310,7 +310,7 @@ void main(void) {
 
   // loop
   const tick = (time, width, height) => {
-		if(!earthTexture || !bgTexture) return;
+    if(!texture1 || !texture2) return;
 
     const rad = ((time / 40) % 360) * Math.PI / 180;
     
@@ -374,13 +374,22 @@ void main(void) {
 		m.multiply(pMatrix, vMatrix, tmpMatrix);
     
     gl.activeTexture(gl.TEXTURE0); 
-    gl.bindTexture(gl.TEXTURE_2D, fBuffer.frameBufferTexture);
+ 
+    // select texture
+    if(textureRadioButtons.inputElems.default.checked) {
+      gl.bindTexture(gl.TEXTURE_2D, fBuffer.frameBufferTexture);
+    } else if(textureRadioButtons.inputElems.texture1.checked) {
+      gl.bindTexture(gl.TEXTURE_2D, texture1);
+    } else if(textureRadioButtons.inputElems.texture2.checked) {
+      gl.bindTexture(gl.TEXTURE_2D, texture2);
+    }
 
+    // select filter
     let useSobel, useSobelGray = false;
-    if(radioButtons.inputElems.sobel.checked) {
+    if(filterRadioButtons.inputElems.sobel.checked) {
       useSobel = true;
     }
-    if(radioButtons.inputElems.sobelGrayscale.checked) {
+    if(filterRadioButtons.inputElems.sobelGrayscale.checked) {
       useSobel = true;
       useSobelGray = true;
     }
@@ -403,7 +412,7 @@ void main(void) {
 
   const addMenu = (parentElem) => {
     const frag = document.createDocumentFragment();
-    radioButtons = createRadioButton({
+    filterRadioButtons = createRadioButton({
       name: "filter",
       data: [
         { id: "normal", checked: true },
@@ -411,7 +420,16 @@ void main(void) {
         { id: "sobelGrayscale" }
       ]
     });
-    frag.appendChild(radioButtons.parentElem);
+    textureRadioButtons = createRadioButton({
+      name: "texture",
+      data: [
+        { id: "default", checked: true },
+        { id: "texture1" },
+        { id: "texture2" },
+      ]
+    });
+    frag.appendChild(filterRadioButtons.parentElem);
+    frag.appendChild(textureRadioButtons.parentElem);
     parentElem.appendChild(frag);
   }
 
