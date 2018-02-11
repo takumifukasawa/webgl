@@ -20,6 +20,7 @@ import blurFilter from "./blurFilter";
 import grayscale from "./grayscale";
 import sepia from "./sepia";
 import sobel from "./sobel";
+import shadowMap from "./shadowMap";
 
 export default {
   simplePolygon,
@@ -42,5 +43,6 @@ export default {
   blurFilter,
   grayscale,
   sepia,
-  sobel
+  sobel,
+  shadowMap,
 };
