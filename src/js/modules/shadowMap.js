@@ -91,88 +91,6 @@ void main(void) {
 }
 `;
 
-  const filterVertexShaderText = `
-attribute vec3 position;
-attribute vec2 textureCoord;
-uniform mat4 mvpMatrix;
-varying vec2 vTextureCoord;
-
-void main(void) {
-  vTextureCoord = textureCoord;
-  gl_Position = mvpMatrix * vec4(position, 1.);
-}
-  `;
-  
-  const filterFragmentShaderText = `
-precision mediump float;
-uniform sampler2D texture;
-uniform bool useSobel;
-uniform bool useSobelGray;
-uniform float hCoef[9];
-uniform float vCoef[9];
-varying vec2 vTextureCoord;
-
-const float redScale = 0.298912;
-const float greenScale = 0.586611;
-const float blueScale = 0.114478;
-const vec3 monochrmeScale = vec3(redScale, greenScale, blueScale);
-
-void main(void) {
-  vec2 offset[9];
-  offset[0] = vec2(-1.0, -1.0);
-  offset[1] = vec2( 0.0, -1.0);
-  offset[2] = vec2( 1.0, -1.0);
-  offset[3] = vec2(-1.0,  0.0);
-  offset[4] = vec2( 0.0,  0.0);
-  offset[5] = vec2( 1.0,  0.0);
-  offset[6] = vec2(-1.0,  1.0);
-  offset[7] = vec2( 0.0,  1.0);
-  offset[8] = vec2( 1.0,  1.0);
-  
-  float tFrag = 1. / ${viewerSize}.;
-  
-  vec2 fc = vec2(gl_FragCoord.s, ${viewerSize}. - gl_FragCoord.t);
-  
-  vec3 horizontalColor = vec3(0.);
-  vec3 verticalColor = vec3(0.);
-  vec4 destColor = vec4(0.);
-
-  horizontalColor += texture2D(texture, (fc + offset[0]) * tFrag).rgb * hCoef[0];
-  horizontalColor += texture2D(texture, (fc + offset[1]) * tFrag).rgb * hCoef[1];
-  horizontalColor += texture2D(texture, (fc + offset[2]) * tFrag).rgb * hCoef[2];
-  horizontalColor += texture2D(texture, (fc + offset[3]) * tFrag).rgb * hCoef[3];
-  horizontalColor += texture2D(texture, (fc + offset[4]) * tFrag).rgb * hCoef[4];
-  horizontalColor += texture2D(texture, (fc + offset[5]) * tFrag).rgb * hCoef[5];
-  horizontalColor += texture2D(texture, (fc + offset[6]) * tFrag).rgb * hCoef[6];
-  horizontalColor += texture2D(texture, (fc + offset[7]) * tFrag).rgb * hCoef[7];
-  horizontalColor += texture2D(texture, (fc + offset[8]) * tFrag).rgb * hCoef[8];
-
-  verticalColor += texture2D(texture, (fc + offset[0]) * tFrag).rgb * vCoef[0];
-  verticalColor += texture2D(texture, (fc + offset[1]) * tFrag).rgb * vCoef[1];
-  verticalColor += texture2D(texture, (fc + offset[2]) * tFrag).rgb * vCoef[2];
-  verticalColor += texture2D(texture, (fc + offset[3]) * tFrag).rgb * vCoef[3];
-  verticalColor += texture2D(texture, (fc + offset[4]) * tFrag).rgb * vCoef[4];
-  verticalColor += texture2D(texture, (fc + offset[5]) * tFrag).rgb * vCoef[5];
-  verticalColor += texture2D(texture, (fc + offset[6]) * tFrag).rgb * vCoef[6];
-  verticalColor += texture2D(texture, (fc + offset[7]) * tFrag).rgb * vCoef[7];
-  verticalColor += texture2D(texture, (fc + offset[8]) * tFrag).rgb * vCoef[8];
-
-  if(useSobel) {
-    destColor = vec4(vec3(sqrt(horizontalColor * horizontalColor + verticalColor * verticalColor)), 1.);
-  } else {
-    destColor = texture2D(texture, vTextureCoord);
-  }
-
-  if(useSobelGray) {
-    float grayColor = dot(destColor.rgb, monochrmeScale);
-    destColor = vec4(vec3(grayColor), 1.);
-  }
-
-  gl_FragColor = destColor;
-}
-  `;
-
-
   let filterRadioButtons, textureRadioButtons;
   let texture1, texture2
 
@@ -280,56 +198,6 @@ void main(void) {
     3, 1, 2,
   ];
   const polyIBO = createIBO(gl, polyIndex);
-
-  // filter
-  
-  const filterVertexShader = createShader(gl, SHADER_TYPES.VERTEX_SHADER, filterVertexShaderText);
-  const filterFragmentShader = createShader(gl, SHADER_TYPES.FRAGMENT_SHADER, filterFragmentShaderText);
-
-  const filterProgram = createProgram(gl, filterVertexShader, filterFragmentShader);
-
-  const filter = {
-    indexes: [
-      0, 2, 1,
-      2, 3, 1
-    ],
-  }
-
-  const filterAttributes = [
-    {
-      label: "position",
-      location: gl.getAttribLocation(filterProgram, "position"),
-      stride: 3,
-      data: [
-        -1.0, 1.0, 0.0,
-        1.0, 1.0, 0.0,
-        -1.0, -1.0, 0.0,
-        1.0, -1.0, 0.0
-      ],
-   }, {
-      label: "textureCoord",
-      location: gl.getAttribLocation(filterProgram, "textureCoord"),
-      stride: 2,
-      data: [
-        0.0, 0.0,
-        1.0, 0.0,
-        0.0, 1.0,
-        1.0, 1.0
-      ],
-    }
-  ];
-  _.forEach(filterAttributes, attribute => {
-    attribute.vbo = createVBO(gl, attribute.data);
-  });
-  const filterIBO = createIBO(gl, filter.indexes);
-
-  const filterUniformLocation = {};
-  filterUniformLocation.mvpMatrix = gl.getUniformLocation(filterProgram, "mvpMatrix");
-  filterUniformLocation.texture = gl.getUniformLocation(filterProgram, "texture");
-  filterUniformLocation.useSobel = gl.getUniformLocation(filterProgram, "useSobel");
-  filterUniformLocation.useSobelGray = gl.getUniformLocation(filterProgram, "useSobelGray");
-  filterUniformLocation.hCoef = gl.getUniformLocation(filterProgram, "hCoef");
-  filterUniformLocation.vCoef = gl.getUniformLocation(filterProgram, "vCoef");
 
   // init matrix
   const m = new matIV();
@@ -561,16 +429,7 @@ void main(void) {
         { id: "sobelGrayscale" }
       ]
     });
-    textureRadioButtons = createRadioButton({
-      name: "texture",
-      data: [
-        { id: "default", checked: true },
-        { id: "texture1" },
-        { id: "texture2" },
-      ]
-    });
     frag.appendChild(filterRadioButtons.parentElem);
-    frag.appendChild(textureRadioButtons.parentElem);
     parentElem.appendChild(frag);
   }
 

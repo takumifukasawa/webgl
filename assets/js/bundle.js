@@ -22312,10 +22312,6 @@ exports.default = function (canvas, gl, width, height) {
 
   var depthFragmentShaderText = "\nprecision mediump float;\nuniform bool useDepthBuffer;\nvarying vec4 vPosition;\n\nvec4 convRGBA(float depth) {\n  float r = depth;\n  float g = fract(r * 255.);\n  float b = fract(g * 255.);\n  float a = fract(b * 255.);\n  float coef = 1. / 255.;\n  r -= g * coef;\n  g -= b * coef;\n  b -= a * coef;\n  return vec4(r, g, b, a);\n}\n\nvoid main(void) {\n  vec4 convColor;\n  if(useDepthBuffer) {\n    convColor = convRGBA(gl_FragCoord.z);\n  } else {\n    float near = .1;\n    float far = 155.;\n    float linerDepth = 1. / (far - near);\n    linerDepth *= length(vPosition);\n    convColor = convRGBA(linerDepth);\n  }\n  gl_FragColor = convColor;\n}\n";
 
-  var filterVertexShaderText = "\nattribute vec3 position;\nattribute vec2 textureCoord;\nuniform mat4 mvpMatrix;\nvarying vec2 vTextureCoord;\n\nvoid main(void) {\n  vTextureCoord = textureCoord;\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n  ";
-
-  var filterFragmentShaderText = "\nprecision mediump float;\nuniform sampler2D texture;\nuniform bool useSobel;\nuniform bool useSobelGray;\nuniform float hCoef[9];\nuniform float vCoef[9];\nvarying vec2 vTextureCoord;\n\nconst float redScale = 0.298912;\nconst float greenScale = 0.586611;\nconst float blueScale = 0.114478;\nconst vec3 monochrmeScale = vec3(redScale, greenScale, blueScale);\n\nvoid main(void) {\n  vec2 offset[9];\n  offset[0] = vec2(-1.0, -1.0);\n  offset[1] = vec2( 0.0, -1.0);\n  offset[2] = vec2( 1.0, -1.0);\n  offset[3] = vec2(-1.0,  0.0);\n  offset[4] = vec2( 0.0,  0.0);\n  offset[5] = vec2( 1.0,  0.0);\n  offset[6] = vec2(-1.0,  1.0);\n  offset[7] = vec2( 0.0,  1.0);\n  offset[8] = vec2( 1.0,  1.0);\n  \n  float tFrag = 1. / " + viewerSize + ".;\n  \n  vec2 fc = vec2(gl_FragCoord.s, " + viewerSize + ". - gl_FragCoord.t);\n  \n  vec3 horizontalColor = vec3(0.);\n  vec3 verticalColor = vec3(0.);\n  vec4 destColor = vec4(0.);\n\n  horizontalColor += texture2D(texture, (fc + offset[0]) * tFrag).rgb * hCoef[0];\n  horizontalColor += texture2D(texture, (fc + offset[1]) * tFrag).rgb * hCoef[1];\n  horizontalColor += texture2D(texture, (fc + offset[2]) * tFrag).rgb * hCoef[2];\n  horizontalColor += texture2D(texture, (fc + offset[3]) * tFrag).rgb * hCoef[3];\n  horizontalColor += texture2D(texture, (fc + offset[4]) * tFrag).rgb * hCoef[4];\n  horizontalColor += texture2D(texture, (fc + offset[5]) * tFrag).rgb * hCoef[5];\n  horizontalColor += texture2D(texture, (fc + offset[6]) * tFrag).rgb * hCoef[6];\n  horizontalColor += texture2D(texture, (fc + offset[7]) * tFrag).rgb * hCoef[7];\n  horizontalColor += texture2D(texture, (fc + offset[8]) * tFrag).rgb * hCoef[8];\n\n  verticalColor += texture2D(texture, (fc + offset[0]) * tFrag).rgb * vCoef[0];\n  verticalColor += texture2D(texture, (fc + offset[1]) * tFrag).rgb * vCoef[1];\n  verticalColor += texture2D(texture, (fc + offset[2]) * tFrag).rgb * vCoef[2];\n  verticalColor += texture2D(texture, (fc + offset[3]) * tFrag).rgb * vCoef[3];\n  verticalColor += texture2D(texture, (fc + offset[4]) * tFrag).rgb * vCoef[4];\n  verticalColor += texture2D(texture, (fc + offset[5]) * tFrag).rgb * vCoef[5];\n  verticalColor += texture2D(texture, (fc + offset[6]) * tFrag).rgb * vCoef[6];\n  verticalColor += texture2D(texture, (fc + offset[7]) * tFrag).rgb * vCoef[7];\n  verticalColor += texture2D(texture, (fc + offset[8]) * tFrag).rgb * vCoef[8];\n\n  if(useSobel) {\n    destColor = vec4(vec3(sqrt(horizontalColor * horizontalColor + verticalColor * verticalColor)), 1.);\n  } else {\n    destColor = texture2D(texture, vTextureCoord);\n  }\n\n  if(useSobelGray) {\n    float grayColor = dot(destColor.rgb, monochrmeScale);\n    destColor = vec4(vec3(grayColor), 1.);\n  }\n\n  gl_FragColor = destColor;\n}\n  ";
-
   var filterRadioButtons = void 0,
       textureRadioButtons = void 0;
   var texture1 = void 0,
@@ -22403,41 +22399,6 @@ exports.default = function (canvas, gl, width, height) {
   });
   var polyIndex = [0, 2, 1, 3, 1, 2];
   var polyIBO = (0, _createIBO2.default)(gl, polyIndex);
-
-  // filter
-
-  var filterVertexShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.VERTEX_SHADER, filterVertexShaderText);
-  var filterFragmentShader = (0, _createShader2.default)(gl, _config.SHADER_TYPES.FRAGMENT_SHADER, filterFragmentShaderText);
-
-  var filterProgram = (0, _createProgram2.default)(gl, filterVertexShader, filterFragmentShader);
-
-  var filter = {
-    indexes: [0, 2, 1, 2, 3, 1]
-  };
-
-  var filterAttributes = [{
-    label: "position",
-    location: gl.getAttribLocation(filterProgram, "position"),
-    stride: 3,
-    data: [-1.0, 1.0, 0.0, 1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, -1.0, 0.0]
-  }, {
-    label: "textureCoord",
-    location: gl.getAttribLocation(filterProgram, "textureCoord"),
-    stride: 2,
-    data: [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0]
-  }];
-  _lodash2.default.forEach(filterAttributes, function (attribute) {
-    attribute.vbo = (0, _createVBO2.default)(gl, attribute.data);
-  });
-  var filterIBO = (0, _createIBO2.default)(gl, filter.indexes);
-
-  var filterUniformLocation = {};
-  filterUniformLocation.mvpMatrix = gl.getUniformLocation(filterProgram, "mvpMatrix");
-  filterUniformLocation.texture = gl.getUniformLocation(filterProgram, "texture");
-  filterUniformLocation.useSobel = gl.getUniformLocation(filterProgram, "useSobel");
-  filterUniformLocation.useSobelGray = gl.getUniformLocation(filterProgram, "useSobelGray");
-  filterUniformLocation.hCoef = gl.getUniformLocation(filterProgram, "hCoef");
-  filterUniformLocation.vCoef = gl.getUniformLocation(filterProgram, "vCoef");
 
   // init matrix
   var m = new matIV();
@@ -22682,12 +22643,7 @@ exports.default = function (canvas, gl, width, height) {
       name: "filter",
       data: [{ id: "normal", checked: true }, { id: "sobel" }, { id: "sobelGrayscale" }]
     });
-    textureRadioButtons = (0, _createInputs.createRadioButton)({
-      name: "texture",
-      data: [{ id: "default", checked: true }, { id: "texture1" }, { id: "texture2" }]
-    });
     frag.appendChild(filterRadioButtons.parentElem);
-    frag.appendChild(textureRadioButtons.parentElem);
     parentElem.appendChild(frag);
   };
 
