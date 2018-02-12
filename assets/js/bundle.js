@@ -22304,13 +22304,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 exports.default = function (canvas, gl, width, height) {
   var viewerSize = width;
 
-  var depthVertexShaderText = "\nattribute vec3 position;\nuniform mat4 mvpMatrix;\nvarying vec4 vPosition;\n\nvoid main(void) {\n  vPosition = mvpMatrix *vec4(position, 1.);\n  gl_Position = vPosition;\n}\n";
+  var depthVertexShaderText = "\nattribute vec3 position;\nuniform mat4 modelViewProjectionMatrix;\nvarying vec4 vPosition;\n\nvoid main(void) {\n  vPosition = modelViewProjectionMatrix *vec4(position, 1.);\n  gl_Position = vPosition;\n}\n";
 
   var depthFragmentShaderText = "\nprecision mediump float;\nuniform bool useDepthBuffer;\nvarying vec4 vPosition;\n\nvec4 convRGBA(float depth) {\n  float r = depth;\n  float g = fract(r * 255.);\n  float b = fract(g * 255.);\n  float a = fract(b * 255.);\n  float coef = 1. / 255.;\n  r -= g * coef;\n  g -= b * coef;\n  b -= a * coef;\n  return vec4(r, g, b, a);\n}\n\nvoid main(void) {\n  vec4 convColor;\n  if(useDepthBuffer) {\n    convColor = convRGBA(gl_FragCoord.z);\n  } else {\n    float near = .1;\n    float far = 150.;\n    float linerDepth = 1. / (far - near);\n    linerDepth *= length(vPosition);\n    convColor = convRGBA(linerDepth);\n  }\n  gl_FragColor = convColor;\n}\n";
 
-  var sceneVertexShaderText = "\nprecision mediump float;\n\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec4 color;\nuniform mat4 mMatrix;\nuniform mat4 mvpMatrix;\nuniform mat4 invMatrix;\nuniform mat4 textureMatrix;\nuniform mat4 lightMatrix;\nuniform vec3 eyeDirection;\nvarying vec4 vTextureCoord;\nvarying vec4 vDepth;\nvarying vec4 vColor;\nvarying vec3 vNormal;\nvarying vec3 vPosition;\n\nvoid main(void) {\n  vPosition = (mMatrix * vec4(position, 1.)).xyz;\n  vColor = color;\n  vNormal = normal;\n  vTextureCoord = textureMatrix * vec4(vPosition, 1.);\n  vDepth = lightMatrix * vec4(position, 1.);\n  gl_Position = mvpMatrix * vec4(position, 1.);\n}\n  ";
+  var sceneVertexShaderText = "\nprecision mediump float;\n\nattribute vec3 position;\nattribute vec3 normal;\nattribute vec4 color;\nuniform mat4 modelMatrix;\nuniform mat4 modelViewProjectionMatrix;\nuniform mat4 invMatrix;\nuniform mat4 textureMatrix;\nuniform mat4 lightMatrix;\nuniform vec3 eyeDirection;\nvarying vec4 vTextureCoord;\nvarying vec4 vDepth;\nvarying vec4 vColor;\nvarying vec3 vNormal;\nvarying vec3 vPosition;\n\nvoid main(void) {\n  vPosition = (modelMatrix * vec4(position, 1.)).xyz;\n  vColor = color;\n  vNormal = normal;\n  vTextureCoord = textureMatrix * vec4(vPosition, 1.);\n  vDepth = lightMatrix * vec4(position, 1.);\n  gl_Position = modelViewProjectionMatrix * vec4(position, 1.);\n}\n  ";
 
-  var sceneFragmentShaderText = "\nprecision mediump float;\n\nvarying vec4 vColor;\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec4 vTextureCoord;\nvarying vec4 vDepth;\nuniform vec3 lightDirection;\nuniform mat4 invMatrix;\nuniform sampler2D texture;\nuniform bool useDepthBuffer;\n\nfloat resetDepth(vec4 RGBA) {\n  const float rMask = 1.;\n  const float gMask = 1. / 255.;\n  const float bMask = 1. / (255. * 255.);\n  const float aMask = 1. / (255. * 255. * 255.);\n  float depth = dot(RGBA, vec4(rMask, gMask, bMask, aMask));\n  return depth;\n}\n\nvoid main(void) {\n  vec3 light = lightDirection - vPosition;\n  vec3 invLight = normalize(invMatrix * vec4(light, 0.)).xyz;\n  float diffuse = clamp(dot(vNormal, invLight), .2, 1.);\n  float shadow = resetDepth(texture2DProj(texture, vTextureCoord));\n  vec4 depthColor = vec4(1.);\n\n  if(vDepth.w > 0.) {\n    if(useDepthBuffer) {\n      vec4 lightCoord = vDepth / vDepth.w;\n      if(lightCoord.z - .0001 > shadow) {\n        depthColor = vec4(.5, .5, .5, 1.);\n      }\n    } else {\n      float near = .1;\n      float far = 150.;\n      float linerDepth = 1. / (far - near);\n      linerDepth *= length(vPosition.xyz - lightDirection);\n      if(linerDepth - .0001 > shadow) {\n        depthColor = vec4(vec3(.5, .5, .5), 1.);\n      }\n    }\n  }\n\n  gl_FragColor = vColor * vec4(vec3(diffuse), 1.) * depthColor;\n  //gl_FragColor = vec4(vec3(shadow), 1.);\n}\n  ";
+  var sceneFragmentShaderText = "\nprecision mediump float;\n\nvarying vec4 vColor;\nvarying vec3 vPosition;\nvarying vec3 vNormal;\nvarying vec4 vTextureCoord;\nvarying vec4 vDepth;\nuniform vec3 lightDirection;\nuniform mat4 invMatrix;\nuniform sampler2D texture;\nuniform bool useDepthBuffer;\n\nfloat resetDepth(vec4 RGBA) {\n  const float rMask = 1.;\n  const float gMask = 1. / 255.;\n  const float bMask = 1. / (255. * 255.);\n  const float aMask = 1. / (255. * 255. * 255.);\n  float depth = dot(RGBA, vec4(rMask, gMask, bMask, aMask));\n  return depth;\n}\n\nvoid main(void) {\n  vec3 light = lightDirection - vPosition;\n  vec3 invLight = normalize(invMatrix * vec4(light, 0.)).xyz;\n  float diffuse = clamp(dot(vNormal, invLight), .2, 1.);\n  float shadow = resetDepth(texture2DProj(texture, vTextureCoord));\n  vec4 depthColor = vec4(1.);\n\n  if(vDepth.w > 0.) {\n    if(useDepthBuffer) {\n      vec4 lightCoord = vDepth / vDepth.w;\n      if(lightCoord.z - .0001 > shadow) {\n        depthColor = vec4(.5, .5, .5, 1.);\n      }\n    } else {\n      float near = .1;\n      float far = 150.;\n      float linerDepth = 1. / (far - near);\n      linerDepth *= length(vPosition.xyz - lightDirection);\n      if(linerDepth - .0001 > shadow) {\n        depthColor = vec4(vec3(.5, .5, .5), 1.);\n      }\n    }\n  }\n\n  gl_FragColor = vColor * vec4(vec3(diffuse), 1.) * depthColor;\n}\n  ";
 
   var depthBufferRadioButtons = void 0,
       lightRangeInput = void 0;
@@ -22331,8 +22331,8 @@ exports.default = function (canvas, gl, width, height) {
   var sceneProgram = (0, _createProgram2.default)(gl, sceneVertexShader, sceneFragmentShader);
 
   var sceneUniformLocation = {};
-  sceneUniformLocation.mMatrix = gl.getUniformLocation(sceneProgram, "mMatrix");
-  sceneUniformLocation.mvpMatrix = gl.getUniformLocation(sceneProgram, "mvpMatrix");
+  sceneUniformLocation.modelMatrix = gl.getUniformLocation(sceneProgram, "modelMatrix");
+  sceneUniformLocation.modelViewProjectionMatrix = gl.getUniformLocation(sceneProgram, "modelViewProjectionMatrix");
   sceneUniformLocation.invMatrix = gl.getUniformLocation(sceneProgram, "invMatrix");
   sceneUniformLocation.lightDirection = gl.getUniformLocation(sceneProgram, "lightDirection");
   sceneUniformLocation.eyeDirection = gl.getUniformLocation(sceneProgram, "eyeDirection");
@@ -22349,7 +22349,7 @@ exports.default = function (canvas, gl, width, height) {
   var depthProgram = (0, _createProgram2.default)(gl, depthVertexShader, depthFragmentShader);
 
   var depthUniformLocation = {};
-  depthUniformLocation.mvpMatrix = gl.getUniformLocation(depthProgram, "mvpMatrix");
+  depthUniformLocation.modelViewProjectionMatrix = gl.getUniformLocation(depthProgram, "modelViewProjectionMatrix");
   depthUniformLocation.useDepthBuffer = gl.getUniformLocation(depthProgram, "useDepthBuffer");
 
   // create torus
@@ -22401,11 +22401,11 @@ exports.default = function (canvas, gl, width, height) {
 
   // init matrix
   var m = new matIV();
-  var mMatrix = m.identity(m.create());
+  var modelMatrix = m.identity(m.create());
   var vMatrix = m.identity(m.create());
   var pMatrix = m.identity(m.create());
   var tmpMatrix = m.identity(m.create());
-  var mvpMatrix = m.identity(m.create());
+  var modelViewProjectionMatrix = m.identity(m.create());
   var invMatrix = m.identity(m.create());
   var textureMatrix = m.identity(m.create());
   var lightMatrix = m.identity(m.create());
@@ -22471,16 +22471,16 @@ exports.default = function (canvas, gl, width, height) {
     var rad = time / 40 % 360 * Math.PI / 180;
     var rad2 = i % 5 * 72 % 360 * Math.PI / 180;
     var ifl = -Math.floor(i / 5) + 1;
-    m.identity(mMatrix);
-    m.rotate(mMatrix, rad2, [0, 1, 0], mMatrix);
-    m.translate(mMatrix, [0.0, ifl * 10.0 + 10.0, (ifl - 2.0) * 7.0], mMatrix);
-    m.rotate(mMatrix, rad, [1, 1, 0], mMatrix);
+    m.identity(modelMatrix);
+    m.rotate(modelMatrix, rad2, [0, 1, 0], modelMatrix);
+    m.translate(modelMatrix, [0.0, ifl * 10.0 + 10.0, (ifl - 2.0) * 7.0], modelMatrix);
+    m.rotate(modelMatrix, rad, [1, 1, 0], modelMatrix);
   };
 
   var updatePoly = function updatePoly() {
-    m.identity(mMatrix);
-    m.translate(mMatrix, [0.0, -10.0, 0.0], mMatrix);
-    m.scale(mMatrix, [30.0, 0.0, 30.0], mMatrix);
+    m.identity(modelMatrix);
+    m.translate(modelMatrix, [0.0, -10.0, 0.0], modelMatrix);
+    m.scale(modelMatrix, [30.0, 0.0, 30.0], modelMatrix);
   };
 
   // loop
@@ -22548,8 +22548,8 @@ exports.default = function (canvas, gl, width, height) {
 
     for (var i = 0; i < 10; i++) {
       updateTorus(time, i);
-      m.multiply(depthViewProjectionMatrix, mMatrix, lightMatrix);
-      gl.uniformMatrix4fv(depthUniformLocation.mvpMatrix, false, lightMatrix);
+      m.multiply(depthViewProjectionMatrix, modelMatrix, lightMatrix);
+      gl.uniformMatrix4fv(depthUniformLocation.modelViewProjectionMatrix, false, lightMatrix);
       gl.uniform1i(depthUniformLocation.useDepthBuffer, useDepthBuffer);
       gl.drawElements(gl.TRIANGLES, torus.indexes.length, gl.UNSIGNED_SHORT, 0);
     }
@@ -22565,7 +22565,7 @@ exports.default = function (canvas, gl, width, height) {
     });
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, polyIBO);
     updatePoly();
-    m.multiply(depthProjectionMatrix, mMatrix, lightMatrix);
+    m.multiply(depthProjectionMatrix, modelMatrix, lightMatrix);
     gl.uniformMatrix4fv(depthUniformLocation.lightMatrix, false, lightMatrix);
     gl.drawElements(gl.TRIANGLES, polyIndex.length, gl.UNSIGNED_SHORT, 0);
 
@@ -22595,11 +22595,11 @@ exports.default = function (canvas, gl, width, height) {
 
     for (var _i = 0; _i < 10; _i++) {
       updateTorus(time, _i);
-      m.multiply(tmpMatrix, mMatrix, mvpMatrix);
-      m.inverse(mMatrix, invMatrix);
-      m.multiply(depthViewProjectionMatrix, mMatrix, lightMatrix);
-      gl.uniformMatrix4fv(sceneUniformLocation.mMatrix, false, mMatrix);
-      gl.uniformMatrix4fv(sceneUniformLocation.mvpMatrix, false, mvpMatrix);
+      m.multiply(tmpMatrix, modelMatrix, modelViewProjectionMatrix);
+      m.inverse(modelMatrix, invMatrix);
+      m.multiply(depthViewProjectionMatrix, modelMatrix, lightMatrix);
+      gl.uniformMatrix4fv(sceneUniformLocation.modelMatrix, false, modelMatrix);
+      gl.uniformMatrix4fv(sceneUniformLocation.modelViewProjectionMatrix, false, modelViewProjectionMatrix);
       gl.uniformMatrix4fv(sceneUniformLocation.invMatrix, false, invMatrix);
       gl.uniformMatrix4fv(sceneUniformLocation.textureMatrix, false, textureMatrix);
       gl.uniform3fv(sceneUniformLocation.lightDirection, lightDirection);
@@ -22620,11 +22620,11 @@ exports.default = function (canvas, gl, width, height) {
     });
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, polyIBO);
     updatePoly();
-    m.multiply(tmpMatrix, mMatrix, mvpMatrix);
-    m.inverse(mMatrix, invMatrix);
-    m.multiply(depthViewProjectionMatrix, mMatrix, lightMatrix);
-    gl.uniformMatrix4fv(sceneUniformLocation.mMatrix, false, mMatrix);
-    gl.uniformMatrix4fv(sceneUniformLocation.mvpMatrix, false, mvpMatrix);
+    m.multiply(tmpMatrix, modelMatrix, modelViewProjectionMatrix);
+    m.inverse(modelMatrix, invMatrix);
+    m.multiply(depthViewProjectionMatrix, modelMatrix, lightMatrix);
+    gl.uniformMatrix4fv(sceneUniformLocation.modelMatrix, false, modelMatrix);
+    gl.uniformMatrix4fv(sceneUniformLocation.modelViewProjectionMatrix, false, modelViewProjectionMatrix);
     gl.uniformMatrix4fv(sceneUniformLocation.invMatrix, false, invMatrix);
     gl.uniformMatrix4fv(sceneUniformLocation.textureMatrix, false, textureMatrix);
     gl.uniformMatrix4fv(sceneUniformLocation.lightMatrix, false, lightMatrix);
