@@ -67,7 +67,7 @@ attribute vec3 normal;
 attribute vec4 color;
 uniform mat4 modelMatrix;
 uniform mat4 modelViewProjectionMatrix;
-uniform mat4 invMatrix;
+uniform mat4 invertMatrix;
 uniform mat4 textureMatrix;
 uniform mat4 lightMatrix;
 uniform vec3 eyeDirection;
@@ -96,7 +96,7 @@ varying vec3 vNormal;
 varying vec4 vTextureCoord;
 varying vec4 vDepth;
 uniform vec3 lightDirection;
-uniform mat4 invMatrix;
+uniform mat4 invertMatrix;
 uniform sampler2D texture;
 uniform bool useDepthBuffer;
 
@@ -111,7 +111,7 @@ float resetDepth(vec4 RGBA) {
 
 void main(void) {
   vec3 light = lightDirection - vPosition;
-  vec3 invLight = normalize(invMatrix * vec4(light, 0.)).xyz;
+  vec3 invLight = normalize(invertMatrix * vec4(light, 0.)).xyz;
   float diffuse = clamp(dot(vNormal, invLight), .2, 1.);
   float shadow = resetDepth(texture2DProj(texture, vTextureCoord));
   vec4 depthColor = vec4(1.);
@@ -156,7 +156,7 @@ void main(void) {
   const sceneUniformLocation = {};
   sceneUniformLocation.modelMatrix = gl.getUniformLocation(sceneProgram, "modelMatrix");
   sceneUniformLocation.modelViewProjectionMatrix = gl.getUniformLocation(sceneProgram, "modelViewProjectionMatrix");
-  sceneUniformLocation.invMatrix = gl.getUniformLocation(sceneProgram, "invMatrix");
+  sceneUniformLocation.invertMatrix = gl.getUniformLocation(sceneProgram, "invertMatrix");
   sceneUniformLocation.lightDirection = gl.getUniformLocation(sceneProgram, "lightDirection");
   sceneUniformLocation.eyeDirection = gl.getUniformLocation(sceneProgram, "eyeDirection");
   sceneUniformLocation.useLight = gl.getUniformLocation(sceneProgram, "useLight");
@@ -251,7 +251,7 @@ void main(void) {
   const pMatrix = m.identity(m.create());
   const tmpMatrix = m.identity(m.create());
   const modelViewProjectionMatrix = m.identity(m.create());
-  const invMatrix = m.identity(m.create());
+  const invertMatrix = m.identity(m.create());
   const textureMatrix = m.identity(m.create());
   const lightMatrix = m.identity(m.create());
   const depthViewMatrix = m.identity(m.create());
@@ -429,11 +429,11 @@ void main(void) {
     for(let i =0; i<10; i++) {
       updateTorus(time, i);
 			m.multiply(tmpMatrix, modelMatrix, modelViewProjectionMatrix);
-			m.inverse(modelMatrix, invMatrix);
+			m.inverse(modelMatrix, invertMatrix);
       m.multiply(depthViewProjectionMatrix, modelMatrix, lightMatrix);
       gl.uniformMatrix4fv(sceneUniformLocation.modelMatrix, false, modelMatrix);
       gl.uniformMatrix4fv(sceneUniformLocation.modelViewProjectionMatrix, false, modelViewProjectionMatrix);
-      gl.uniformMatrix4fv(sceneUniformLocation.invMatrix, false, invMatrix);
+      gl.uniformMatrix4fv(sceneUniformLocation.invertMatrix, false, invertMatrix);
       gl.uniformMatrix4fv(sceneUniformLocation.textureMatrix, false, textureMatrix);
       gl.uniform3fv(sceneUniformLocation.lightDirection, lightDirection);
       gl.uniform3fv(sceneUniformLocation.eyePosition, eyePosition);
@@ -450,11 +450,11 @@ void main(void) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, polyIBO);
     updatePoly();
     m.multiply(tmpMatrix, modelMatrix, modelViewProjectionMatrix);
-    m.inverse(modelMatrix, invMatrix);
+    m.inverse(modelMatrix, invertMatrix);
     m.multiply(depthViewProjectionMatrix, modelMatrix, lightMatrix);
     gl.uniformMatrix4fv(sceneUniformLocation.modelMatrix, false, modelMatrix);
     gl.uniformMatrix4fv(sceneUniformLocation.modelViewProjectionMatrix, false, modelViewProjectionMatrix);
-    gl.uniformMatrix4fv(sceneUniformLocation.invMatrix, false, invMatrix);
+    gl.uniformMatrix4fv(sceneUniformLocation.invertMatrix, false, invertMatrix);
     gl.uniformMatrix4fv(sceneUniformLocation.textureMatrix, false, textureMatrix);
     gl.uniformMatrix4fv(sceneUniformLocation.lightMatrix, false, lightMatrix);
 
