@@ -8,45 +8,13 @@ import createProgram from "./../utils/createProgram";
 import setAttribute from "./../utils/setAttribute";
 import createSphere from "./../utils/createSphere";
 import createTorus from "./../utils/createTorus";
-import { createRadioButton } from "./../utils/createInputs";
+import { createRadioButton, createRangeInput } from "./../utils/createInputs";
 import createTexture from "./../utils/createTexture";
 import createFrameBuffer from "./../utils/createFrameBuffer";
 import hsva from "./../utils/hsva";
 
 export default (canvas, gl, width, height) => {
   let viewerSize = width;
-
-  const sceneVertexShaderText = `
-attribute vec3 position;
-attribute vec3 normal;
-attribute vec4 color;
-uniform mat4 mvpMatrix;
-uniform mat4 invMatrix;
-uniform vec3 lightDirection;
-uniform vec3 eyeDirection;
-uniform vec4 ambientColor;
-varying vec4 vColor;
-
-void main(void) {
-  vec3 invLight = normalize(invMatrix * vec4(lightDirection, 0.)).xyz;
-  vec3 invEye = normalize(invMatrix * vec4(eyeDirection, 0.)).xyz;
-  vec3 halfLE = normalize(invLight + invEye);
-  float diffuse = clamp(dot(normal, invLight), 0., 1.);
-  float specular = pow(clamp(dot(normal, halfLE), 0., 1.), 50.);
-  vec4 ambient = color * ambientColor;
-  vColor = ambient * vec4(vec3(diffuse), 1.) + vec4(vec3(specular), 1.);
-  gl_Position = mvpMatrix * vec4(position, 1.);
-}
-  `;
-  
-  const sceneFragmentShaderText = `
-precision mediump float;
-varying vec4 vColor;
-
-void main(void) {
-  gl_FragColor = vColor;
-}
-  `;
 
   const depthVertexShaderText = `
 attribute vec3 position;
@@ -82,7 +50,7 @@ void main(void) {
     convColor = convRGBA(gl_FragCoord.z);
   } else {
     float near = .1;
-    float far = 155.;
+    float far = 150.;
     float linerDepth = 1. / (far - near);
     linerDepth *= length(vPosition);
     convColor = convRGBA(linerDepth);
@@ -91,10 +59,89 @@ void main(void) {
 }
 `;
 
-  let filterRadioButtons, textureRadioButtons;
+  const sceneVertexShaderText = `
+precision mediump float;
+
+attribute vec3 position;
+attribute vec3 normal;
+attribute vec4 color;
+uniform mat4 mMatrix;
+uniform mat4 mvpMatrix;
+uniform mat4 invMatrix;
+uniform mat4 textureMatrix;
+uniform mat4 lightMatrix;
+uniform vec3 eyeDirection;
+varying vec4 vTextureCoord;
+varying vec4 vDepth;
+varying vec4 vColor;
+varying vec3 vNormal;
+varying vec3 vPosition;
+
+void main(void) {
+  vPosition = (mMatrix * vec4(position, 1.)).xyz;
+  vColor = color;
+  vNormal = normal;
+  vTextureCoord = textureMatrix * vec4(vPosition, 1.);
+  vDepth = lightMatrix * vec4(position, 1.);
+  gl_Position = mvpMatrix * vec4(position, 1.);
+}
+  `;
+  
+  const sceneFragmentShaderText = `
+precision mediump float;
+
+varying vec4 vColor;
+varying vec3 vPosition;
+varying vec3 vNormal;
+varying vec4 vTextureCoord;
+varying vec4 vDepth;
+uniform vec3 lightDirection;
+uniform mat4 invMatrix;
+uniform sampler2D texture;
+uniform bool useDepthBuffer;
+
+float resetDepth(vec4 RGBA) {
+  const float rMask = 1.;
+  const float gMask = 1. / 255.;
+  const float bMask = 1. / (255. * 255.);
+  const float aMask = 1. / (255. * 255. * 255.);
+  float depth = dot(RGBA, vec4(rMask, gMask, bMask, aMask));
+  return depth;
+}
+
+void main(void) {
+  vec3 light = lightDirection - vPosition;
+  vec3 invLight = normalize(invMatrix * vec4(light, 0.)).xyz;
+  float diffuse = clamp(dot(vNormal, invLight), .2, 1.);
+  float shadow = resetDepth(texture2DProj(texture, vTextureCoord));
+  vec4 depthColor = vec4(1.);
+
+  if(vDepth.w > 0.) {
+    if(useDepthBuffer) {
+      vec4 lightCoord = vDepth / vDepth.w;
+      if(lightCoord.z - .0001 > shadow) {
+        depthColor = vec4(.5, .5, .5, 1.);
+      }
+    } else {
+      float near = .1;
+      float far = 150.;
+      float linerDepth = 1. / (far - near);
+      linerDepth *= length(vPosition.xyz - lightDirection);
+      if(linerDepth - .0001 > shadow) {
+        depthColor = vec4(vec3(.5, .5, .5), 1.);
+      }
+    }
+  }
+
+  gl_FragColor = vColor * vec4(vec3(diffuse), 1.) * depthColor;
+  //gl_FragColor = vec4(vec3(shadow), 1.);
+}
+  `;
+
+  let depthBufferRadioButtons, lightRangeInput;
   let texture1, texture2
 
-  const lightDirection = [0.0, 1.0, 1.0];
+  const lightDirection = [0.0, 30.0, 0.0];
 
   const lightUpDirection = [0.0, 0.0, -1.0];
 
@@ -113,7 +160,6 @@ void main(void) {
   sceneUniformLocation.invMatrix = gl.getUniformLocation(sceneProgram, "invMatrix");
   sceneUniformLocation.lightDirection = gl.getUniformLocation(sceneProgram, "lightDirection");
   sceneUniformLocation.eyeDirection = gl.getUniformLocation(sceneProgram, "eyeDirection");
-  sceneUniformLocation.ambientColor = gl.getUniformLocation(sceneProgram, "ambientColor");
   sceneUniformLocation.useLight = gl.getUniformLocation(sceneProgram, "useLight");
   sceneUniformLocation.texture = gl.getUniformLocation(sceneProgram, "texture");
   sceneUniformLocation.textureMatrix = gl.getUniformLocation(sceneProgram, "textureMatrix");
@@ -259,11 +305,6 @@ void main(void) {
     const qMatrix = m.identity(m.create());
     q.toMatIV(qt, qMatrix);
     
-    const cameraPosition = [0.0, 5.0, 10.0];
-    m.lookAt(cameraPosition, [0, 0, 0], [0, 1, 0], vMatrix);
-    m.multiply(vMatrix, qMatrix, vMatrix);
-    m.perspective(45, width / height, 0.1, 100, pMatrix);
-    m.multiply(pMatrix, vMatrix, tmpMatrix);
   }
 
   // set size
@@ -272,48 +313,46 @@ void main(void) {
     gl.viewport(0, 0, width, height);
   }
 
+  const updateTorus = (time, i) => {
+    const rad = ((time / 40) % 360) * Math.PI / 180;
+    const rad2 = (((i % 5) * 72) % 360) * Math.PI / 180;
+    const ifl = -Math.floor(i / 5) + 1;
+    m.identity(mMatrix);
+		m.rotate(mMatrix, rad2, [0, 1, 0], mMatrix);
+		m.translate(mMatrix, [0.0, ifl * 10.0 + 10.0, (ifl - 2.0) * 7.0], mMatrix);
+		m.rotate(mMatrix, rad, [1, 1, 0], mMatrix);
+  }
+
+  const updatePoly = () => {
+    m.identity(mMatrix);
+    m.translate(mMatrix, [0.0, -10.0, 0.0], mMatrix);
+    m.scale(mMatrix, [30.0, 0.0, 30.0], mMatrix);
+  }
+
   // loop
   const tick = (time, width, height) => {
     if(!texture1 || !texture2) return;
   
-    gl.useProgram(depthProgram);
-
-    // bind frame buffer
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fBuffer.frameBuffer);
-
-    // clear frame buffer
-    const bgHSV = hsva(time / 100 % 360, 1, 1, 1);
-    gl.clearColor(bgHSV[0], bgHSV[1], bgHSV[2], bgHSV[3]);
-		gl.clearDepth(1.0);
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
     // view projection
     const eyePosition = new Array();
     const camUpDirection = new Array();
-    q.toVecIII([0.0, 20.0, 0.0], qt, eyePosition);
+    q.toVecIII([0.0, 70.0, 0.0], qt, eyePosition);
     q.toVecIII([0.0, 0.0, -1.0], qt, camUpDirection);
     m.lookAt(eyePosition, [0, 0, 0], camUpDirection, vMatrix);
-    m.perspective(90, width / height, 0.1, 100, pMatrix);
+    m.perspective(45, width / height, 0.1, 150, pMatrix);
     m.multiply(pMatrix, vMatrix, tmpMatrix);
 
     // texture matrix
     m.identity(textureMatrix);
-    textureMatrix[0] = 0.5;
-    textureMatrix[1] = 0.0;
-    textureMatrix[2] = 0.0;
-    textureMatrix[3] = 0.0;
-    textureMatrix[4] = 0.0;
-    textureMatrix[5] = 0.5;
-    textureMatrix[6] = 0.0;
-    textureMatrix[7] = 0.0;
-    textureMatrix[8] = 0.0;
-    textureMatrix[9] = 0.0;
-    textureMatrix[10] = 0.5;
-    textureMatrix[11] = 0.0;
-    textureMatrix[12] = 0.5;
-    textureMatrix[13] = 0.5;
-    textureMatrix[14] = 0.0;
-    textureMatrix[15] = 1.0;
+    textureMatrix[0] = 0.5; textureMatrix[1] = 0.0; textureMatrix[2] = 0.0; textureMatrix[3] = 0.0;
+    textureMatrix[4] = 0.0; textureMatrix[5] = 0.5; textureMatrix[6] = 0.0; textureMatrix[7] = 0.0;
+    textureMatrix[8] = 0.0; textureMatrix[9] = 0.0; textureMatrix[10] = 1.0; textureMatrix[11] = 0.0;
+    textureMatrix[12] = 0.5; textureMatrix[13] = 0.5; textureMatrix[14] = 0.0; textureMatrix[15] = 1.0;
+
+    const lightRange = lightRangeInput.inputElem.value;
+    lightDirection[0] = 0.0 * lightRange;
+    lightDirection[1] = 1.0 * lightRange;
+    lightDirection[2] = 0.0 * lightRange;
 
     // ライトから見た view matrix
     m.lookAt(lightDirection, [0, 0, 0], lightUpDirection, depthViewMatrix);
@@ -328,7 +367,19 @@ void main(void) {
     // ライトから見た view projection matrix
     m.multiply(depthProjectionMatrix, depthViewMatrix, depthViewProjectionMatrix);
 
-    const useDepthBuffer = true;
+    // depth
+
+    gl.useProgram(depthProgram);
+
+    // bind frame buffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fBuffer.frameBuffer);
+
+    // clear frame buffer
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
+		gl.clearDepth(1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    const useDepthBuffer = !!depthBufferRadioButtons.inputElems.useDepthBuffer.checked;
 
     // draw torus
 
@@ -338,12 +389,7 @@ void main(void) {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, torusIBO);
 
     for(let i =0; i<10; i++) {
-      const rad = ((time / 40) % 360) * Math.PI / 180;
-      const ambientColor = hsva(i * 40, 1, 1, 1);
-      m.identity(mMatrix);
-			m.rotate(mMatrix, i * 2 * Math.PI / 9, [0, 1, 0], mMatrix);
-			m.translate(mMatrix, [0.0, 0.0, 10.0], mMatrix);
-			m.rotate(mMatrix, rad, [1, 1, 0], mMatrix);
+      updateTorus(time, i);
       m.multiply(depthViewProjectionMatrix, mMatrix, lightMatrix);
       gl.uniformMatrix4fv(depthUniformLocation.mvpMatrix, false, lightMatrix);
       gl.uniform1i(depthUniformLocation.useDepthBuffer, useDepthBuffer)
@@ -356,9 +402,7 @@ void main(void) {
       setAttribute(gl, vbo, location, stride);
     });
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, polyIBO);
-    m.identity(mMatrix);
-    m.translate(mMatrix, [0.0, -10.0, 0.0], mMatrix);
-    m.scale(mMatrix, [30.0, 0.0, 30.0], mMatrix);
+    updatePoly();
     m.multiply(depthProjectionMatrix, mMatrix, lightMatrix);
     gl.uniformMatrix4fv(depthUniformLocation.lightMatrix, false, lightMatrix);
     gl.drawElements(gl.TRIANGLES, polyIndex.length, gl.UNSIGNED_SHORT, 0);
@@ -372,6 +416,10 @@ void main(void) {
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, fBuffer.frameBufferTexture);
 
+    gl.clearColor(0.0, 0.7, 0.7, 1.0);
+		gl.clearDepth(1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
     // draw torus
 
     _.forEach(torusAttributes, ({ vbo, location, stride }) => {
@@ -379,20 +427,19 @@ void main(void) {
     });
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, torusIBO);
 
-    for(let i =0; i<9; i++) {
-      const rad = ((time / 40) % 360) * Math.PI / 180;
-      const ambientColor = hsva(i * 40, 1, 1, 1);
-      m.identity(mMatrix);
-			m.rotate(mMatrix, i * 2 * Math.PI / 9, [0, 1, 0], mMatrix);
-			m.translate(mMatrix, [0.0, 0.0, 10.0], mMatrix);
-			m.rotate(mMatrix, rad, [1, 1, 0], mMatrix);
+    for(let i =0; i<10; i++) {
+      updateTorus(time, i);
 			m.multiply(tmpMatrix, mMatrix, mvpMatrix);
 			m.inverse(mMatrix, invMatrix);
+      m.multiply(depthViewProjectionMatrix, mMatrix, lightMatrix);
+      gl.uniformMatrix4fv(sceneUniformLocation.mMatrix, false, mMatrix);
       gl.uniformMatrix4fv(sceneUniformLocation.mvpMatrix, false, mvpMatrix);
       gl.uniformMatrix4fv(sceneUniformLocation.invMatrix, false, invMatrix);
+      gl.uniformMatrix4fv(sceneUniformLocation.textureMatrix, false, textureMatrix);
       gl.uniform3fv(sceneUniformLocation.lightDirection, lightDirection);
       gl.uniform3fv(sceneUniformLocation.eyePosition, eyePosition);
-      gl.uniform4fv(sceneUniformLocation.ambientColor, ambientColor);
+      gl.uniform1i(sceneUniformLocation.texture, 0);
+      gl.uniform1i(sceneUniformLocation.useDepthBuffer, useDepthBuffer);
       gl.drawElements(gl.TRIANGLES, torus.indexes.length, gl.UNSIGNED_SHORT, 0);
     }
 
@@ -402,13 +449,11 @@ void main(void) {
       setAttribute(gl, vbo, location, stride);
     });
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, polyIBO);
-    m.identity(mMatrix);
-    m.translate(mMatrix, [0.0, -10.0, 0.0], mMatrix);
-    m.scale(mMatrix, [30.0, 0.0, 30.0], mMatrix);
+    updatePoly();
     m.multiply(tmpMatrix, mMatrix, mvpMatrix);
     m.inverse(mMatrix, invMatrix);
     m.multiply(depthViewProjectionMatrix, mMatrix, lightMatrix);
-    gl.uniformMatrix4fv(sceneUniformLocation.mvpMatrix, false, mMatrix);
+    gl.uniformMatrix4fv(sceneUniformLocation.mMatrix, false, mMatrix);
     gl.uniformMatrix4fv(sceneUniformLocation.mvpMatrix, false, mvpMatrix);
     gl.uniformMatrix4fv(sceneUniformLocation.invMatrix, false, invMatrix);
     gl.uniformMatrix4fv(sceneUniformLocation.textureMatrix, false, textureMatrix);
@@ -421,15 +466,16 @@ void main(void) {
 
   const addMenu = (parentElem) => {
     const frag = document.createDocumentFragment();
-    filterRadioButtons = createRadioButton({
-      name: "filter",
+    depthBufferRadioButtons = createRadioButton({
+      name: "type",
       data: [
-        { id: "normal", checked: true },
-        { id: "sobel" },
-        { id: "sobelGrayscale" }
+        { id: "useDepthBuffer", checked: true },
+        { id: "useVertex" },
       ]
     });
-    frag.appendChild(filterRadioButtons.parentElem);
+    lightRangeInput = createRangeInput("lightRange", 30, 60, 45, "lightRange");
+    frag.appendChild(depthBufferRadioButtons.parentElem);
+    frag.appendChild(lightRangeInput.parentElem);
     parentElem.appendChild(frag);
   }
 
