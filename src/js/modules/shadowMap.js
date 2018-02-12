@@ -134,6 +134,7 @@ void main(void) {
   }
 
   gl_FragColor = vColor * vec4(vec3(diffuse), 1.) * depthColor;
+  //gl_FragColor = vec4(vec3(depthColor), 1.);
 }
   `;
 
@@ -435,6 +436,7 @@ void main(void) {
       gl.uniformMatrix4fv(sceneUniformLocation.modelViewProjectionMatrix, false, modelViewProjectionMatrix);
       gl.uniformMatrix4fv(sceneUniformLocation.invertMatrix, false, invertMatrix);
       gl.uniformMatrix4fv(sceneUniformLocation.textureMatrix, false, textureMatrix);
+      gl.uniformMatrix4fv(sceneUniformLocation.lightMatrix, false, lightMatrix);
       gl.uniform3fv(sceneUniformLocation.lightDirection, lightDirection);
       gl.uniform3fv(sceneUniformLocation.eyePosition, eyePosition);
       gl.uniform1i(sceneUniformLocation.texture, 0);
