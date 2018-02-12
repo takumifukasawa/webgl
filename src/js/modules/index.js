@@ -21,6 +21,7 @@ import grayscale from "./grayscale";
 import sepia from "./sepia";
 import sobel from "./sobel";
 import shadowMap from "./shadowMap";
+import projectionTexture from "./projectionTexture";
 
 export default {
   simplePolygon,
@@ -45,4 +46,5 @@ export default {
   sepia,
   sobel,
   shadowMap,
+  projectionTexture,
 };
